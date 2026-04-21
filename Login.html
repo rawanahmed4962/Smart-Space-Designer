@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="Login.css">
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+
+       
+        <header> 
+            <div class="languages-switcher">
+                <select onchange="location = this.value;">
+                    <option value="index_ar.html"> اللغة العربية </option>
+                    <option value="index_en.html"> English </option>
+                    <option value="index_fr.html"> French </option>
+                    <option value="index_de.html"> German </option>
+                    <option value="index_zh.html"> Chinese </option>
+                    <option value="index_es.html"> Spain </option>
+                    <option value="index_tr.html"> Turkisk </option>
+                </select>
+            </div>
+        </header>
+
+        <div class="logo">Smart Space Design</span></div>
+
+  <section class="hero">
+        <div class="login-card">
+            
+            <div class="tab-header">
+                <button id="loginTab" class="active" onclick="toggleForm('login')"> Login </button>
+                <button id="signupTab" onclick="toggleForm('signup')"> Sign Up </button>
+            </div>
+
+            <form id="loginForm" action="Login.php" method="POST">
+                <h2> Welcome Back! </h2>
+                <div class="input-field">
+                    <input type="email" name="email" required>
+                    <label> Email </label>
+                </div>
+                <div class="input-field">
+                    <input type="password" name="password" required>
+                    <label> Password </label>
+                </div>
+                <button type="submit" name="login" class="main-submit"> Submit </button>
+                <p class="switch-text"> You don't have an account ? <a href="javascript:void(0)" onclick="toggleForm('signup')"> Sign up now </a></p>
+            </form>
+
+            <form id="signupForm" action="Signup.php" method="POST" style="display: none;">
+                <h2> Join us </h2>
+                <div class="input-field">
+                    <input type="text" name="fullname" required>
+                    <label> Full Name </label>
+                </div>
+                <div class="input-field">
+                    <input type="email" name="email" required>
+                    <label> Email </label>
+                </div>
+                <div class="input-field">
+                    <input type="password" name="password" required>
+                    <label> Password </label>
+                </div>
+                <div class="input-field">
+                    <input type="date" name="dob" required>
+                    <label class="static-label"> Birthday Date </label>
+                </div>
+                <button type="submit" name="signup" class="main-submit"> Create Account </button>
+                <p class="switch-text"> You already have an account ? <a href="javascript:void(0)" onclick="toggleForm('login')"> Login </a></p>
+            </form>
+
+        </div>
+    </section>
+
+    <script>
+        function toggleForm(type) {
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const loginTab = document.getElementById('loginTab');
+            const signupTab = document.getElementById('signupTab');
+
+            if (type === 'signup') {
+                loginForm.style.display = 'none';
+                signupForm.style.display = 'block';
+                signupTab.classList.add('active');
+                loginTab.classList.remove('active');
+            } else {
+                signupForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                loginTab.classList.add('active');
+                signupTab.classList.remove('active');
+            }
+        }
+    </script>
+
+    
+
+       
+
+
+
+
+
+
+    </body>
+</html>
