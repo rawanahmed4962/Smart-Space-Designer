@@ -1,0 +1,304 @@
+:root {
+    --dark-coffee: #3e2723;   
+    --espresso: #5d4037;      
+    --latte: #8d6e63;         
+    --cappuccino: #d7ccc8;   
+    --cream: #efebe9;         
+    --white: #ffffff;
+    --gold-touch: #bcaaa4;   
+    --transition: all 0.3s ease;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+}
+
+body {
+    background-image: url(Background.png); 
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    min-height: 100vh;
+}
+
+header.top-bar {
+    background-color: var(--dark-coffee);
+    padding: 10px 8%;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.languages-switcher select {
+    background: rgba(104, 76, 20, 0.1);
+    color: var(--Brown);
+    border: 1px solid var(--latte);
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    outline: none;
+}
+
+.languages-switcher select option {
+    background-color: var(--dark-coffee);
+    color: white;
+}
+
+nav.main-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: var(--white);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--espresso);
+    letter-spacing: 1px;
+}
+
+.logo span {
+    color: var(--latte);
+    font-weight: 300;
+}
+
+.nav-links .btn {
+    padding: 12px 28px;
+    border-radius: 50px; 
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+    text-decoration: none;
+}
+
+.login-btn {
+    background: transparent;
+    color: var(--espresso);
+    border: 2px solid var(--espresso) !important;
+    margin-left: 15px;
+}
+
+.login-btn:hover {
+    background: var(--cappuccino);
+}
+
+.signup-btn {
+    background: var(--espresso);
+    color: var(--white);
+    box-shadow: 0 4px 10px rgba(93, 64, 55, 0.3);
+}
+
+.signup-btn:hover {
+    background: var(--dark-coffee);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(93, 64, 55, 0.4);
+}
+
+.hero {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+}
+
+.login-card {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 450px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+}
+
+.login-card h2 {
+    color: var(--dark-coffee);
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.login-card p {
+    color: var(--latte);
+    margin-bottom: 35px;
+    font-weight: 400;
+}
+
+.input-field {
+    position: relative;
+    margin-bottom: 30px;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 15px;
+    border: 1.5px solid var(--cappuccino);
+    border-radius: 12px;
+    outline: none;
+    font-size: 16px;
+    background: var(--cream);
+    transition: var(--transition);
+}
+
+.input-field input:focus {
+    border-color: var(--espresso);
+    background: var(--white);
+}
+
+.input-field label {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--latte);
+    pointer-events: none;
+    transition: var(--transition);
+}
+
+.input-field input:focus ~ label,
+.input-field input:valid ~ label {
+    top: -12px;
+    right: 10px;
+    font-size: 13px;
+    background: var(--white);
+    padding: 0 8px;
+    color: var(--espresso);
+    font-weight: bold;
+}
+
+.main-submit {
+    width: 100%;
+    padding: 16px;
+    background: var(--espresso);
+    color: var(--white);
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 10px;
+}
+
+.main-submit:hover {
+    background: var(--dark-coffee);
+    letter-spacing: 2px;
+}
+
+.tab-header {
+    display: flex;
+    margin-bottom: 30px;
+    border-bottom: 1px solid var(--cappuccino);
+}
+
+.tab-header button {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--latte);
+    transition: 0.3s;
+}
+
+.tab-header button.active {
+    color: var(--espresso);
+    border-bottom: 3px solid var(--espresso);
+}
+
+.input-field {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-field input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--cappuccino);
+    border-radius: 8px;
+    outline: none;
+    background: var(--cream);
+
+    text-align: left;    
+    direction: ltr;
+}
+
+.input-field label {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    transition: 0.3s;
+    pointer-events: none;
+}
+
+.static-label {
+    top: -10px !important;
+    right: 10px !important;
+    font-size: 12px;
+    background: white;
+    padding: 0 5px;
+    color: var(--espresso) !important;
+}
+
+.input-field input:focus ~ label,
+.input-field input:valid ~ label {
+    top: -10px;
+    right: 10px;
+    font-size: 12px;
+    background: white;
+    padding: 0 5px;
+    color: var(--espresso);
+}
+
+.main-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--espresso);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.switch-text {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.switch-text a {
+    color: var(--espresso);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    .main-nav {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .hero {
+        padding: 20px;
+    }
+    
+    .login-card {
+        padding: 30px 20px;
+    }
+}
