@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Space Designer - Premium Access</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="Login.css">
+<link rel="stylesheet" href="login.css">
 </head>
 <body>
 
@@ -27,21 +27,21 @@
         <h2 id="formTitle">Welcome Back</h2>
         <p id="formSubtitle">Access your premium studio</p>
         
-        <form id="authForm" action="Login.php" method="POST">
+        <form id="authForm">
             <div class="floating-group" id="nameGroup">
-                <input type="text" id="nameInput" name="name" placeholder=" ">
+                <input type="text" id="nameInput" placeholder=" ">
                 <label for="nameInput" id="lblName">Full Name</label>
             </div>
             <div class="floating-group" id="birthdayGroup">
-                <input type="date" id="bdayInput" name="bday" placeholder=" ">
+                <input type="date" id="bdayInput" placeholder=" ">
                 <label for="bdayInput" id="lblBday">Date of Birth</label>
             </div>
             <div class="floating-group">
-                <input type="email" id="emailInput" name="email" placeholder=" " required>
+                <input type="email" id="emailInput" placeholder=" " required>
                 <label for="emailInput" id="lblEmail">Email Address</label>
             </div>
             <div class="floating-group">
-                <input type="password" id="passInput" name="password" placeholder=" " required>
+                <input type="password" id="passInput" placeholder=" " required>
                 <label for="passInput" id="lblPass">Password</label>
             </div>
             
@@ -60,14 +60,11 @@
             <span id="lblApple">Continue with Apple</span>
         </button>
 
-        <div class="toggle-text" id="toggleModeContainer"></div>
+        <div class="toggle-text" id="toggleModeContainer">
+            </div>
     </div>
     
     <div class="click-hint" id="doorHint">CLICK DOORS TO ENTER</div>
-</div>
-
-<div class="blueprint-overlay" id="blueprintOverlay">
-    <div class="blueprint-text" id="blueprintText">INITIALIZING WORKSPACE...</div>
 </div>
 
 <script>
@@ -193,31 +190,25 @@
     updateUI();
 
     document.getElementById('authForm').addEventListener('submit', (e) => {
-        e.preventDefault(); // h-nwa2f el submit el 3adi 34an n3ml el animation
+        e.preventDefault();
         const btn = document.getElementById('mainActionBtn');
         const originalText = btn.innerText;
         
-        btn.innerText = isEnglish ? 'Authenticating...' : 'جاري التحقق...';
+        btn.innerText = isEnglish ? 'Processing...' : 'جاري التحميل...';
         btn.style.background = '#8B5A2B'; 
 
         setTimeout(() => {
-            // 1. Zoom in lel scene kolha
-            scene.classList.add('zoom-in');
+            btn.innerText = originalText;
+            btn.style.background = '#5C3A21'; 
             
-            // 2. n-zher el blueprint overlay
-            const blueprintOverlay = document.getElementById('blueprintOverlay');
-            const blueprintText = document.getElementById('blueprintText');
+            const msgEN = isLoginMode ? 'Logged in successfully!' : 'Account created successfully!';
+            const msgAR = isLoginMode ? 'تم تسجيل الدخول بنجاح!' : 'تم إنشاء الحساب بنجاح!';
+            alert(isEnglish ? msgEN : msgAR);
             
-            blueprintText.innerText = isEnglish ? 'INITIALIZING STUDIO...' : 'جاري تجهيز مساحة العمل...';
-            blueprintOverlay.classList.add('active');
-
-            // 3. b3d ma el animation y5las (ba3d 2.2 sawany), hn3ml submit bged ll PHP
-            // 3. b3d ma el animation y5las, haywadek 3ala el dashboard.html 3latool mn 8er PHP
-            setTimeout(() => {
-                window.location.href = '../dashboard/dashboard.html'; 
-            }, 2200);
-
-        }, 800);
+            scene.classList.remove('open'); 
+            e.target.reset(); 
+            if(!isLoginMode) toggleMode(); 
+        }, 1500);
     });
 </script>
 </body>
