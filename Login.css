@@ -16,10 +16,13 @@ body {
     justify-content: center; 
     font-family: 'Montserrat', sans-serif; 
     overflow: hidden; 
-    background-image: radial-gradient(rgba(92, 58, 33, 0.15) 1.5px, transparent 1.5px);
-    background-size: 30px 30px;
-    animation: panBackground 15s linear infinite;
+    background-image: url('Background.jpeg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
 }
+
 
 @keyframes panBackground { 
     0% { background-position: 0 0; } 
@@ -29,8 +32,6 @@ body {
 .scene { 
     width: 420px; height: 620px; 
     perspective: 2200px; position: relative; 
-    /* El transition gded 34an el zoom ytla3 smooth */
-    transition: transform 1.5s cubic-bezier(0.7, 0, 0.3, 1), opacity 1.2s ease-in;
 }
 
 .scene::before {
@@ -201,58 +202,3 @@ body.lang-ar .social-btn svg { margin-right: 0; margin-left: 10px; }
 body.lang-ar .close-btn { right: auto; left: 20px; }
 body.lang-ar .divider::before { margin-right: 0; margin-left: .8em; }
 body.lang-ar .divider::after { margin-left: 0; margin-right: .8em; }
-
-/* ==================================================== */
-/* === 3D BLUEPRINT ZOOM TRANSITION (EL EDFA GDEEDA) === */
-/* ==================================================== */
-
-.scene.zoom-in {
-    transform: scale(3) translateZ(600px);
-    opacity: 0;
-    pointer-events: none;
-}
-
-.blueprint-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #0A192F; 
-    background-image: 
-        linear-gradient(rgba(79, 195, 247, 0.15) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79, 195, 247, 0.15) 1px, transparent 1px),
-        linear-gradient(rgba(79, 195, 247, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(79, 195, 247, 0.05) 1px, transparent 1px);
-    background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
-    background-position: center center;
-    opacity: 0;
-    pointer-events: none;
-    z-index: 9999;
-    transition: opacity 1.2s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-}
-
-.blueprint-overlay.active {
-    opacity: 1;
-    pointer-events: all;
-}
-
-.blueprint-text {
-    color: #4FC3F7; 
-    font-family: 'Montserrat', sans-serif;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: 6px;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 1s ease 0.6s; 
-}
-
-.blueprint-overlay.active .blueprint-text {
-    opacity: 1;
-    transform: translateY(0);
-}
