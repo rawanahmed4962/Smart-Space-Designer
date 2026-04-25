@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSD Studio - Project Central</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #F4EFE6;
+            --bg-sidebar: #5D4037;
+            --bg-card: #ffffff;
+            --primary: #5D4037;
+            --primary-text: #F4EFE6;
+            --accent: #d4af37;
+            --text: #5D4037;
+            --text-sec: #8D6E63;
+            --border: rgba(93, 64, 55, 0.1);
+            --sidebar-width: 300px;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0a192f;
+            --bg-sidebar: #112240;
+            --bg-card: #1e293b;
+            --primary: #E6D5C3;
+            --primary-text: #1e293b;
+            --accent: #d4af37;
+            --text: #f8f9fc;
+            --text-sec: #94a3b8;
+            --border: #233554;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-main); color: var(--text); transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
+
+        .blueprint-bg {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(var(--primary) 0.5px, transparent 0.5px);
+            background-size: 40px 40px; opacity: 0.1; z-index: -1;
+            pointer-events: none; transition: 0.3s;
+        }
+
+        .app-container { display: flex; }
+
+        .sidebar {
+            width: var(--sidebar-width); background: var(--bg-sidebar);
+            height: 100vh; position: fixed; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 100; transition: 0.3s;
+        }
+
+        .sidebar-header { padding: 30px; font-weight: 700; color: var(--primary); font-size: 22px; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+
+        .nav-links { list-style: none; padding: 20px; flex: 1; }
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #F4EFE6;
+            opacity: 1;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            background: #F4EFE6;
+            color: #5D4037;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item:hover:not(.active) {
+            background: #F4EFE6;
+            color: #5D4037;
+        }
+
+        .nav-item.active i,
+        .nav-item:hover i {
+            color: #5D4037;
+        }
+
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
+
+        .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: 40px; }
+        .view { display: none; animation: fadeIn 0.5s ease; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-icon { background: var(--primary); color: var(--primary-text); border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-icon:hover { transform: scale(1.1); }
+
+        .section-title { margin: 30px 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        .recommended-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
+        .rec-item { min-width: 100px; text-align: center; cursor: pointer; }
+        .rec-circle { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; transition: 0.3s; }
+        .rec-item:hover .rec-circle { transform: scale(1.1); background: var(--primary); color: var(--primary-text); }
+
+        .grid-container { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        .design-card { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.3s; cursor: pointer; }
+        .design-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card-img { height: 150px; background: #ddd; background-size: cover; background-position: center; }
+        .card-body { padding: 15px; }
+
+        .text-card { padding: 25px; border-left: 5px solid var(--accent); }
+        .text-card h3 { margin-bottom: 5px; font-size: 18px; }
+        .text-card p { font-size: 13px; color: var(--text-sec); font-weight: 600; }
+
+        .doors-container { display: flex; gap: 20px; height: 450px; margin-top: 20px; }
+        .room-door { flex: 1; position: relative; border-radius: 20px; overflow: hidden; border: 2px solid var(--border); cursor: pointer; transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .room-door .door-bg { width: 100%; height: 100%; background-size: cover; background-position: center; filter: grayscale(100%) brightness(40%); transition: 0.5s ease; }
+        .room-door .door-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); color: white; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; opacity: 0; transition: 0.5s ease; z-index: 2; text-shadow: 0 4px 15px #000; }
+        .room-door:hover { flex: 2; border-color: var(--accent); }
+        .room-door:hover .door-bg { filter: grayscale(0%) brightness(100%); transform: scale(1.1); }
+        .room-door:hover .door-label { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        .glass-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 25px; transition: 0.3s; }
+
+        .profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 35px; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; }
+        .profile-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .stat-item { text-align: center; padding: 15px; background: rgba(150, 150, 150, 0.05); border-radius: 12px; border: 1px solid var(--border); }
+        .stat-item strong { display: block; font-size: 18px; color: var(--primary); transition: 0.3s; }
+        .stat-item span { font-size: 11px; color: var(--text-sec); text-transform: uppercase; font-weight: 700; }
+
+        .settings-section h3 { margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; transition: 0.3s; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--border); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-info { display: flex; flex-direction: column; gap: 4px; }
+        .settings-info span { font-size: 13px; color: var(--text-sec); }
+
+        select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text); outline: none; transition: 0.3s; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .4s; border-radius: 22px; }
+        input:checked + .slider { background: var(--primary); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .btn-action { background: var(--primary); color: var(--primary-text); border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 20px; }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .sidebar { animation: sidebarSlideIn 0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+        @keyframes sidebarSlideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .main-content { animation: contentFadeIn 0.6s ease 0.55s both; }
+        @keyframes contentFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+
+<body>
+    <div class="blueprint-bg" id="parallaxBg"></div>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header"><i class="fa-solid fa-wand-magic-sparkles"></i> SSD Studio</div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i> Home</li>
+                <li class="nav-item" data-target="new-project"><i class="fa-solid fa-plus-circle"></i> New Project</li>
+                <li class="nav-item" data-target="my-designs"><i class="fa-solid fa-folder-open"></i> My Projects</li>
+                <li class="nav-item" data-target="profile"><i class="fa-solid fa-user-tie"></i> My Profile</li>
+                <li class="nav-item" data-target="settings"><i class="fa-solid fa-sliders"></i> Studio Settings</li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="nav-item" onclick="window.location.href='../login/Login.html'" style="color: #e74c3c;">
+                    <i class="fa-solid fa-power-off"></i> Logout
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <section class="view active" id="home">
+                <div class="header-flex">
+                    <h1 id="username" style="font-size: 32px;">Hi, User! </h1>
+                    <button class="btn-icon" onclick="document.querySelector('[data-target=\'new-project\']').click()" title="Create New Project">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+                <p style="color: var(--text-sec);">Welcome back to your premium studio.</p>
+
+                <!-- FLIP CARD STYLES -->
+                <style>
+                .circles-row{display:flex;gap:28px;margin-bottom:2rem;flex-wrap:wrap;align-items:flex-start}
+                .circle-item{display:flex;flex-direction:column;align-items:center;gap:8px}
+                .circle-wrap{width:70px;height:70px;perspective:600px;cursor:pointer;flex-shrink:0}
+                .circle-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform 0.6s cubic-bezier(0.4,0,0.2,1);border-radius:50%}
+                .circle-wrap.flipped .circle-inner{transform:rotateY(180deg)}
+                .circle-front,.circle-back-sm{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;font-size:20px}
+                .circle-back-sm{transform:rotateY(180deg);background:#5D4037;color:#D4AF37;font-size:11px;font-weight:700}
+                .circle-label{font-size:13px;color:#5D4037;font-weight:600}
+                .c-modern{background:#D4AF37}.c-boho{background:#7B5E3A}.c-industrial{background:#1B3A5C}.c-french{background:#BFA980}.c-minimalist{background:#2C1B17}
+                .big-card-wrap{display:none;margin-bottom:2rem}
+                .big-card-wrap.open{display:block;animation:slideDown 0.4s ease}
+                @keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+                .big-card{border-radius:18px;overflow:hidden;border:1.5px solid rgba(93,64,55,0.12)}
+                .big-card-header{background:#5D4037;padding:1.2rem 1.5rem}
+                .big-card-header h2{color:#D4AF37;font-size:20px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:0.5rem}
+                .big-card-header p{color:#F4EFE6;font-size:13px;line-height:1.8;max-width:560px}
+                .panel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:1.2rem;background:white}
+                .scard{border-radius:12px;overflow:hidden;border:1.5px solid rgba(93,64,55,0.1);cursor:pointer;transition:all 0.3s}
+                .scard:hover{transform:translateY(-4px);border-color:#D4AF37;box-shadow:0 8px 20px rgba(93,64,55,0.12)}
+                .scard-img{height:90px;background-size:cover;background-position:center}
+                .scard-body{padding:8px 10px;background:white}
+                .scard-name{font-size:12px;font-weight:700;color:#3E2723}
+                .scard-desc{font-size:11px;color:#8D6E63;line-height:1.4;margin-top:2px}
+                .lb-wrap{display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.88);z-index:99999;align-items:center;justify-content:center}
+                .lb-wrap.open{display:flex}
+                .lb-box { 
+  width: 80vw; 
+  max-width: 900px;
+}
+
+.lb-box img { 
+  width: 100%; 
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  display: block; 
+}
+                .lb-name{color:#F4EFE6;font-size:14px;font-weight:700;text-align:center;padding:12px;background:#111;letter-spacing:1px}
+                .lb-close{position:absolute;top:12px;right:12px;width:36px;height:36px;background:#D4AF37;border:none;border-radius:50%;color:#3E2723;font-size:18px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:100000;box-shadow:0 2px 8px rgba(0,0,0,0.5)}
+                </style>
+
+                <h2 style="font-size: 18px; margin: 30px 0 15px;">Recommended Styles</h2>
+                <div class="circles-row" id="circlesRow"></div>
+                <div class="big-card-wrap" id="bigCardWrap">
+                  <div class="big-card">
+                    <div class="big-card-header">
+                      <h2 id="bigCardTitle"></h2>
+                      <p id="bigCardDesc"></p>
+                    </div>
+                    <div class="panel-grid" id="panelGrid"></div>
+                  </div>
+                </div>
+
+                <script>
+                const styleData={
+                  modern:{label:"Modern",icon:"🛋",cls:"c-modern",
+                    desc:"Clean lines, open spaces, and neutral tones define the modern style. It blends function with aesthetics — sleek furniture, minimal clutter, and a refined palette that reflects contemporary living at its most elegant.",
+                    items:[
+                      {name:"Contemporary",desc:"Clean lines & neutral tones",img:"cont.jpeg"},
+                      {name:"Mid-Century Modern",desc:"Retro shapes meet modern function",img:"mid.jpeg"},
+                      {name:"Minimalist Modern",desc:"Less is more",img:"mini.jpeg"},
+                      {name:"Urban Modern",desc:"City-inspired bold details",img:"urban.jpeg"},
+                      {name:"Japandi",desc:"Japanese calm meets Scandi simplicity",img:"jap.jpeg"},
+                      {name:"Transitional",desc:"Classic & contemporary in balance",img:"tran.jpeg"},
+                      {name:"Coastal Modern",desc:"Breezy tones with natural textures",img:"co.jpeg"},
+                      {name:"Hollywood Regency",desc:"Glamour and bold contrast",img:"holly.jpeg"},
+                      {name:"New Nordic",desc:"Warm Scandi with cozy layers",img:"new.jpeg"},
+                    ]},
+                  boho:{label:"Boho",icon:"🌿",cls:"c-boho",
+                    desc:"Free-spirited and layered with texture, color, and natural elements. Boho style celebrates individuality — mixing patterns, handmade pieces, and organic materials into a warm, lived-in space that feels deeply personal.",
+                    items:[
+                      {name:"Boho Chic",desc:"Free-spirited layered textures",img:"chic.jpeg.jpeg"},
+                      {name:"Moroccan",desc:"Rich patterns & jewel tones",img:"mor.jpeg.jpeg"},
+                      {name:"Eclectic",desc:"Mix of eras and cultures",img:"ecl.jpeg.jpeg"},
+                      {name:"Wabi-Sabi",desc:"Beauty in imperfection",img:"wabi.jpeg.jpeg"},
+                      {name:"Desert Boho",desc:"Earthy terracotta vibes",img:"des.jpeg.jpeg"},
+                      {name:"Vintage Boho",desc:"Thrift charm & handmade warmth",img:"vin.jpeg.jpeg"},
+                      {name:"Nordic Boho",desc:"Hygge warmth with boho layers",img:"nor.jpeg.jpeg"},
+                      {name:"Tropical Boho",desc:"Lush greens & rattan",img:"tro.jpeg.jpeg"},
+                      {name:"Artisan Boho",desc:"Handcrafted & deeply personal",img:"art.jpeg.jpeg"},
+                    ]},
+                  industrial:{label:"Industrial",icon:"🏭",cls:"c-industrial",
+                    desc:"Exposed brick, raw steel, and open ceilings inspired by urban warehouses. Industrial style embraces unfinished surfaces and functional beauty — where concrete, metal, and wood combine into bold, honest spaces.",
+                    items:[
+                      {name:"Loft Industrial",desc:"Brick, steel & high ceilings",img:"loft.jpeg"},
+                      {name:"Raw Industrial",desc:"Exposed concrete & bold metal",img:"raw.jpeg"},
+                      {name:"Modern Industrial",desc:"Industrial bones, warm accessories",img:"modern.jpeg"},
+                      {name:"Urban Loft",desc:"Creative energy in the city",img:"ur.jpeg"},
+                      {name:"Dark Industrial",desc:"Moody tones & blackened metals",img:"dark.jpeg"},
+                      {name:"Industrial Rustic",desc:"Reclaimed wood softens metal",img:"rus.jpeg"},
+                      {name:"Brutalist",desc:"Raw concrete as bold statement",img:"brut.jpeg"},
+                      {name:"Edison Industrial",desc:"Warm bulbs & copper fixtures",img:"edison.jpeg"},
+                      {name:"Steampunk",desc:"Victorian gears & antique pipes",img:"steam.jpeg"},
+                    ]},
+                  french:{label:"French",icon:"🏛",cls:"c-french",
+                    desc:"Parisian elegance with ornate mouldings, soft grey tones, and gilded details. French style is effortlessly refined — a blend of grandeur and intimacy that turns any room into a sophisticated haven of beauty.",
+                    items:[
+                      {name:"Parisian Chic",desc:"Elegant mouldings & soft greys",img:"pari.jpeg"},
+                      {name:"French Country",desc:"Rustic Provence warmth & florals",img:"country.jpeg"},
+                      {name:"Louis XVI",desc:"Gilded ornaments & royal symmetry",img:"louis.jpeg"},
+                      {name:"French Farmhouse",desc:"Aged linen & stone floors",img:"farm.jpeg"},
+                      {name:"Haussmannian",desc:"Grand Parisian apartment aesthetic",img:"hauss.jpeg"},
+                      {name:"Art Nouveau French",desc:"Organic curves & floral motifs",img:"nou.jpeg"},
+                      {name:"Cote dAzur",desc:"Mediterranean light & pastel blues",img:"cote.jpeg"},
+                      {name:"Belle Epoque",desc:"Opulent fin-de-siecle sophistication",img:"belle.jpeg"},
+                      {name:"French Eclectic",desc:"Old-world finds with modern ease",img:"eclec.jpeg"},
+                    ]},
+                  minimalist:{label:"Minimalist",icon:"➖",cls:"c-minimalist",
+                    desc:"White space, one focal point, and absolute calm. Minimalist style strips away everything unnecessary — leaving only what truly matters. It's not about emptiness, it's about intentionality and the luxury of space.",
+                    items:[
+                      {name:"Pure Minimalist",desc:"White space & one accent",img:"pure.jpeg"},
+                      {name:"Zen Minimalist",desc:"Japanese stillness & balance",img:"zen.jpeg"},
+                      {name:"Warm Minimalist",desc:"Soft neutrals & natural materials",img:"warmy.jpeg"},
+                      {name:"Dark Minimalist",desc:"Moody black palette & sharp lines",img:"darky.jpeg"},
+                      {name:"Monochromatic",desc:"One color family, perfect layers",img:"mono.jpeg"},
+                      {name:"Functional Minimal",desc:"Every object earns its place",img:"func.jpeg"},
+                      {name:"Sculptural Minimal",desc:"Furniture as art, space as canvas",img:"sculp.jpeg"},
+                      {name:"Organic Minimal",desc:"Curved forms & earthy textures",img:"organ.jpeg"},
+                      {name:"Quiet Luxury",desc:"Understated quality, no logos",img:"quiet.jpeg"},
+                    ]},
+                };
+                const row=document.getElementById('circlesRow');
+                let activeKey=null;
+                Object.entries(styleData).forEach(([key,s])=>{
+                  const item=document.createElement('div');
+                  item.className='circle-item';
+                  item.innerHTML=`<div class="circle-wrap" id="cw-${key}"><div class="circle-inner"><div class="circle-front ${s.cls}">${s.icon}</div><div class="circle-back-sm">${s.label}</div></div></div><div class="circle-label">${s.label}</div>`;
+                  item.querySelector('.circle-wrap').onclick=()=>toggleCard(key);
+                  row.appendChild(item);
+                });
+                function toggleCard(key){
+                  const wrap=document.getElementById('bigCardWrap');
+                  const cw=document.getElementById('cw-'+key);
+                  if(activeKey===key){wrap.classList.remove('open');cw.classList.remove('flipped');activeKey=null;return;}
+                  if(activeKey)document.getElementById('cw-'+activeKey).classList.remove('flipped');
+                  activeKey=key;
+                  cw.classList.add('flipped');
+                  const s=styleData[key];
+                  document.getElementById('bigCardTitle').innerText=s.label;
+                  document.getElementById('bigCardDesc').innerText=s.desc;
+                  const g=document.getElementById('panelGrid');
+                  g.innerHTML=s.items.map(i=>`<div class="scard" onclick="openLb('${i.img}','${i.name}')"><div class="scard-img" style="background-image:url('${i.img}')"></div><div class="scard-body"><div class="scard-name">${i.name}</div><div class="scard-desc">${i.desc}</div></div></div>`).join('');
+                  wrap.classList.remove('open');
+                  setTimeout(()=>wrap.classList.add('open'),10);
+                }
+                function openLb(src,name){document.getElementById('lbImg').src=src;document.getElementById('lbName').innerText=name;document.getElementById('lb').classList.add('open');}
+                function closeLb(){document.getElementById('lb').classList.remove('open')}
+                </script>
+
+                <h2 style="font-size: 18px; margin-bottom: 15px;">Latest Projects</h2>
+                <div class="grid-container">
+                    <div class="design-card">
+                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=400');"></div>
+                        <div class="card-body"><h3>Village West Penthouse</h3><p>Edited 2h ago</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="new-project">
+                <h2>Choose a Room to Design</h2>
+                <div class="doors-container">
+                    <a href="new_project/office/office.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('office.jpeg')"></div>
+                        <div class="door-label">Office</div>
+                    </a>
+                    <a href="new_project/living_room/living_room.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800');"></div>
+                        <div class="door-label">Living Room</div>
+                    </a>
+                    <a href="new_project/bedroom/bedroom.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800');"></div>
+                        <div class="door-label">Bedroom</div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="view" id="my-designs">
+                <h2>My Projects Library</h2>
+                <div class="grid-container" style="margin-top: 20px;">
+                    <div class="design-card text-card">
+                        <h3>Village West Penthouse</h3>
+                        <p>Yesterday • Living Room</p>
+                    </div>
+                    <div class="design-card text-card">
+                        <h3>Sibling Shared Room</h3>
+                        <p>2 Days Ago • Bedroom</p>
+                    </div>
+                    <div class="design-card text-card">
+                        <h3>Workspace Upgrade</h3>
+                        <p>Last Week • Office</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="profile">
+                <div class="glass-card">
+                    <div class="profile-header">
+                        <img src="https://ui-avatars.com/api/?name=Youssef+Gaser&background=5d4037&color=fff" class="profile-img">
+                        <div>
+                            <h2 style="font-size: 28px;">Youssef Gaser</h2>
+                            <p style="color: var(--accent); font-weight: 700; letter-spacing: 1px;">PREMIUM ARCHITECT</p>
+                        </div>
+                    </div>
+                    <div class="profile-stat-grid">
+                        <div class="stat-item"><strong>12</strong><span>Projects</span></div>
+                        <div class="stat-item"><strong>Modern/Boho</strong><span>Pref. Style</span></div>
+                        <div class="stat-item"><strong>19</strong><span>Age</span></div>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <div class="settings-row"><strong>Specialty</strong> <span>3D Walkthroughs</span></div>
+                        <div class="settings-row"><strong>Member Since</strong> <span>Nov 2025</span></div>
+                        <div class="settings-row"><strong>Year of Birth</strong> <span>2007</span></div>
+                        <div class="settings-row"><strong>Email</strong> <span>youssef.gaser@example.com</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="settings">
+                <h2 style="margin-bottom: 30px;">Studio Settings</h2>
+                <div class="glass-card">
+                    <div class="settings-section">
+                        <h3>General Appearance</h3>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Dark Mode</strong><span>Switch theme</span></div>
+                            <label class="switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Measurement Units</strong><span>Metric or Imperial</span></div>
+                            <select><option>Metric (Meters)</option><option>Imperial (Feet)</option></select>
+                        </div>
+                    </div>
+                    <div class="settings-section" style="margin-top: 40px;">
+                        <h3>Design Preferences</h3>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Default Room Style</strong><span>Pre-load assets</span></div>
+                            <select><option>Modern</option><option>Bohemian</option><option>Industrial</option></select>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Studio Language</strong><span>Change UI language</span></div>
+                            <select><option>English (US)</option><option>Arabic (العربية)</option></select>
+                        </div>
+                    </div>
+                    <button class="btn-action" style="width: 100%; margin-top: 30px;">Apply All Changes</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const navItems = document.querySelectorAll('.nav-item[data-target]');
+        const views = document.querySelectorAll('.view');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const target = item.getAttribute('data-target');
+                views.forEach(v => {
+                    v.classList.remove('active');
+                    if(v.id === target) v.classList.add('active');
+                });
+            });
+        });
+
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if(localStorage.getItem('ssd_theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            darkModeToggle.checked = true;
+        }
+        darkModeToggle.addEventListener('change', () => {
+            if(darkModeToggle.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('ssd_theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('ssd_theme', 'light');
+            }
+        });
+
+        document.onmousemove = (e) => {
+            const bg = document.getElementById('parallaxBg');
+            bg.style.transform = `translate(${(innerWidth/2 - e.pageX)/80}px, ${(innerHeight/2 - e.pageY)/80}px) scale(1.1)`;
+        };
+        document.getElementById("username").innerText = "Hi, " + localStorage.getItem("userName");
+    </script>
+    <div class="lb-wrap" id="lb">
+                  <div class="lb-box">
+                    <button class="lb-close" onclick="closeLb()">×</button>
+                    <img id="lbImg" src="" alt="">
+                    <div class="lb-name" id="lbName"></div>
+                  </div>
+                </div>
+</body>
+
+</html>

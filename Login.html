@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Space Designer - Premium Access</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="login.css">
+<link rel="stylesheet" href="Login.css">
 </head>
 <body>
 
@@ -27,21 +27,21 @@
         <h2 id="formTitle">Welcome Back</h2>
         <p id="formSubtitle">Access your premium studio</p>
         
-        <form id="authForm">
+        <form id="authForm" action="Login.php" method="POST">
             <div class="floating-group" id="nameGroup">
-                <input type="text" id="nameInput" placeholder=" ">
+                <input type="text" id="nameInput" name="name" placeholder=" ">
                 <label for="nameInput" id="lblName">Full Name</label>
             </div>
             <div class="floating-group" id="birthdayGroup">
-                <input type="date" id="bdayInput" placeholder=" ">
+                <input type="date" id="bdayInput" name="bday" placeholder=" ">
                 <label for="bdayInput" id="lblBday">Date of Birth</label>
             </div>
             <div class="floating-group">
-                <input type="email" id="emailInput" placeholder=" " required>
+                <input type="email" id="emailInput" name="email" placeholder=" " required>
                 <label for="emailInput" id="lblEmail">Email Address</label>
             </div>
             <div class="floating-group">
-                <input type="password" id="passInput" placeholder=" " required>
+                <input type="password" id="passInput" name="password" placeholder=" " required>
                 <label for="passInput" id="lblPass">Password</label>
             </div>
             
@@ -60,11 +60,35 @@
             <span id="lblApple">Continue with Apple</span>
         </button>
 
-        <div class="toggle-text" id="toggleModeContainer">
-            </div>
+        <div class="toggle-text" id="toggleModeContainer"></div>
     </div>
     
     <div class="click-hint" id="doorHint">CLICK DOORS TO ENTER</div>
+</div>
+
+<div id="circleOverlay" style="
+    position: fixed; inset: 0; z-index: 9999;
+    background: #F4EFE6;
+    clip-path: circle(0% at 50% 50%);
+    transition: clip-path 0.85s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    pointer-events: none;
+">
+    <div id="circleTitle" style="
+        font-family: 'Playfair Display', serif;
+        font-size: 22px; font-weight: 700;
+        letter-spacing: 4px; color: #5C3A21;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    ">Smart Space Designer</div>
+    <div id="circleLine" style="
+        width: 0; height: 1px;
+        background: #D4AF37;
+        transition: width 0.6s ease 0.1s;
+    "></div>
 </div>
 
 <script>
@@ -190,26 +214,30 @@
     updateUI();
 
     document.getElementById('authForm').addEventListener('submit', (e) => {
-        e.preventDefault();
-        const btn = document.getElementById('mainActionBtn');
-        const originalText = btn.innerText;
-        
-        btn.innerText = isEnglish ? 'Processing...' : 'جاري التحميل...';
-        btn.style.background = '#8B5A2B'; 
+    e.preventDefault();
+    const btn = document.getElementById('mainActionBtn');
+    btn.innerText = isEnglish ? 'Authenticating...' : 'جاري التحقق...';
+    btn.style.background = '#8B5A2B';
 
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.background = '#5C3A21'; 
-            
-            const msgEN = isLoginMode ? 'Logged in successfully!' : 'Account created successfully!';
-            const msgAR = isLoginMode ? 'تم تسجيل الدخول بنجاح!' : 'تم إنشاء الحساب بنجاح!';
-            alert(isEnglish ? msgEN : msgAR);
-            
-            scene.classList.remove('open'); 
-            e.target.reset(); 
-            if(!isLoginMode) toggleMode(); 
-        }, 1500);
-    });
+    // 1. الباب يبدأ الـ Zoom فوراً
+    scene.classList.add('zoom-in');
+
+    // 2. الدايرة تفتح "فوراً" مع حركة الباب
+    const overlay = document.getElementById('circleOverlay');
+    overlay.style.clipPath = 'circle(150% at 50% 50%)';
+
+    // 3. العنوان يظهر والدايرة لسه بتكبر (بعد 300 مللي ثانية بس)
+    setTimeout(() => {
+        document.getElementById('circleTitle').style.opacity = '1';
+        document.getElementById('circleTitle').style.transform = 'translateY(0)';
+        document.getElementById('circleLine').style.width = '120px'; // خليته أطول شوية لشكل أشيك
+    }, 300);
+
+    // 4. الانتقال للداشبورد (ممكن نقلل الوقت ده كمان لسرعة الاستجابة)
+    setTimeout(() => {
+        window.location.href = '../dashboard/dashboard.html';
+    }, 1600); 
+});
 </script>
 </body>
 </html>

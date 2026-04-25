@@ -1,0 +1,113 @@
+:root {
+    --stone-brown: #5D4037;   
+    --sand-beige: #F4EFE6;    
+    --accent-gold: #D4AF37;   
+
+    --bg-main: var(--sand-beige);
+    --bg-sidebar: #5D4037;
+    --bg-card: rgba(255, 255, 255, 0.3);
+    
+    --text-on-beige: #5D4037;
+    --text-on-brown: var(--sand-beige);  
+    --border-color: rgba(93, 64, 55, 0.1);
+}
+
+[data-theme="dark"] {
+    --bg-main: #1A1210;       
+    --bg-sidebar: #2C1B17;
+    --text-on-beige: #F4EFE6;  
+    --text-on-brown: #A89B8C;
+}
+
+/* Background Blueprint */
+.blueprint-bg {
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(var(--primary-color) 0.5px, transparent 0.5px);
+    background-size: 40px 40px;
+    opacity: 0.1;
+    z-index: -1;
+    pointer-events: none;
+}
+
+.sidebar {
+    background-color: #5D4037 !important; /* البني الصخري */
+    color: var(--sand-beige) !important;          /* كلام بيج */
+    backdrop-filter: blur(10px);
+}
+
+/* بنجبر الأيقونات والكلام جوه السايد بار يبقوا بيج */
+.sidebar .menu-item, 
+.sidebar .menu-item i, 
+.sidebar .logo-text {
+    color: var(--sand-beige) !important;
+}
+
+.design-card {
+    background: white; /* الكارت نفسه أبيض نظيف */
+    border: 1px solid rgba(93, 64, 55, 0.1); /* برواز بني خفيف جداً */
+    color: var(--stone-brown); /* الكلام اللي جوه الكارت بني */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 15px; /* عشان يبقى شكله ألطف */
+    overflow: hidden;
+}
+
+.design-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--accent-gold); /* البرواز يقلب ذهبي */
+    box-shadow: 0 10px 20px rgba(93, 64, 55, 0.1); /* ظل بني خفيف */
+}
+
+/* Entrance Animation */
+.view.active .design-card {
+    animation: slideUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 2. نطبق الحركة على الـ Sidebar (أول حاجة تظهر) */
+.sidebar {
+    animation: slideDownFade 0.8s ease-out forwards;
+}
+
+/* 3. نطبق الحركة على الأجزاء التانية بتأخير (Delay) عشان يظهروا ورا بعض */
+.sidebar .menu-item:nth-child(1) { animation-delay: 0.2s; }
+.sidebar .menu-item:nth-child(2) { animation-delay: 0.3s; }
+.sidebar .menu-item:nth-child(3) { animation-delay: 0.4s; }
+
+/* 4. كروت المشاريع أو الـ Dashboard Content */
+.main-content {
+    animation: slideDownFade 1s ease-out 0.6s forwards; /* تبدأ بعد السايد بار */
+    opacity: 0; /* تكون مخفية في الأول */
+}
+/* Ba2y el CSS bta3ak hysht8l tmam m3 el edafat dy */
+/* === ENTRANCE TRANSITION FROM LOGIN === */
+@keyframes sidebarSlideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes contentFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.sidebar {
+    animation: sidebarSlideIn 0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both;
+}
+
+.main-content {
+    animation: contentFadeIn 0.6s ease 0.55s both;
+    opacity: 0;
+}

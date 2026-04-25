@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Editor - 3D Walkthrough</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="office.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+</head>
+<body>
+    <div id="intro-flash">OFFICE STUDIO</div>
+    
+    <div id="crosshair">+</div>
+
+    <div id="blocker">
+        <div id="instructions">
+            <span style="font-size:36px; font-weight: bold; color: #d4af37;">Click to Enter the Room</span><br/>
+            <br/>Move: W, A, S, D<br/>Look: Mouse<br/>Exit: ESC
+        </div>
+    </div>
+
+    <div id="ui-panel">
+        <h3>Room Settings</h3>
+        <div class="control-group">
+            <label>Width (Meters): <span id="width-val">4</span>m</label>
+            <input type="range" id="width-slider" min="3" max="10" value="4" step="0.5">
+        </div>
+        <div class="control-group">
+            <label>Length (Meters): <span id="length-val">4</span>m</label>
+            <input type="range" id="length-slider" min="3" max="10" value="4" step="0.5">
+        </div>
+        
+        <div class="control-group">
+            <label>Wall Color</label>
+            <input type="color" id="wall-color" value="#2c3e50" class="color-picker">
+        </div>
+        <div class="control-group">
+            <label>Floor Color</label>
+            <input type="color" id="floor-color" value="#5d4037" class="color-picker">
+        </div>
+
+        <div class="control-group">
+            <label>Ceiling Light</label>
+            <div class="color-buttons">
+                <button class="light-btn" data-color="0xffffff" style="background: #ffffff;"></button>
+                <button class="light-btn" data-color="0xffd6aa" style="background: #ffd6aa;"></button>
+                <button class="light-btn" data-color="0xffe4ce" style="background: #ffe4ce;"></button>
+                <button class="light-btn" data-color="0x88ccff" style="background: #88ccff;"></button>
+            </div>
+        </div>
+        <button id="back-btn" onclick="window.location.href='../../dashboard.html'">Exit Editor</button>
+    </div>
+
+    <div id="canvas-container"></div>
+    <script src="office.js"></script>
+</body>

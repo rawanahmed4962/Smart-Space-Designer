@@ -1,0 +1,93 @@
+:root {
+    --primary: #5d4037;
+    --accent: #d4af37;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: transparent; 
+    font-family: 'Cairo', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.selection-wrapper {
+    width: 95%;
+    text-align: center;
+}
+
+.view-title {
+    color: var(--primary);
+    font-size: 26px;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.doors-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    height: 450px;
+    gap: 20px;
+}
+
+.room-door {
+    flex: 1;
+    position: relative;
+    border-radius: 25px;
+    overflow: hidden;
+    border: 2px solid rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+.room-door .door-bg {
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    filter: grayscale(100%) brightness(40%);
+    transition: all 0.6s ease;
+}
+
+/* Room Images */
+.office-img { background-image: url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=800'); }
+.living-img { background-image: url('https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800'); }
+.bedroom-img { background-image: url('https://images.unsplash.com/photo-1505691938895-1758d7eaa511?w=800'); }
+
+.room-door .door-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    opacity: 0;
+    transition: 0.5s ease;
+    z-index: 2;
+    text-shadow: 0 4px 15px rgba(0,0,0,1);
+}
+
+/* === Hover State === */
+.room-door:hover {
+    flex: 1.8;
+    transform: scale(1.15);
+    border-color: var(--accent);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.room-door:hover .door-bg {
+    filter: grayscale(0%) brightness(100%);
+    transform: scale(1.2);
+}
+
+.room-door:hover .door-label {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
