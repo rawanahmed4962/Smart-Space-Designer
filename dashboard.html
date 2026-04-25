@@ -152,6 +152,205 @@
 
         .main-content { animation: contentFadeIn 0.6s ease 0.55s both; }
         @keyframes contentFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        
+/* ===================== STYLE QUIZ ===================== */
+.sq-wrap { max-width:700px; margin:0 auto; padding:10px 0 60px; }
+.sq-screen { animation:fadeIn 0.45s ease; }
+
+/* INTRO */
+.sq-intro {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:28px; overflow:hidden;
+  box-shadow:0 8px 40px rgba(93,64,55,0.08);
+}
+.sq-intro-hero {
+  height:220px;
+  background:linear-gradient(135deg, #5D4037 0%, #3E2723 50%, #1a0f0b 100%);
+  position:relative; overflow:hidden;
+  display:flex; align-items:center; justify-content:center; flex-direction:column;
+}
+.sq-intro-hero::before {
+  content:''; position:absolute; inset:0;
+  background-image: radial-gradient(rgba(212,175,55,0.15) 1px, transparent 1px);
+  background-size:28px 28px;
+}
+.sq-hero-badge {
+  position:relative; z-index:1;
+  background:rgba(212,175,55,0.15); border:1px solid rgba(212,175,55,0.3);
+  color:var(--accent); font-size:10px; font-weight:700; letter-spacing:3px;
+  text-transform:uppercase; padding:6px 18px; border-radius:50px; margin-bottom:16px;
+}
+.sq-hero-title {
+  position:relative; z-index:1;
+  font-family:'Cormorant Garamond',serif; font-size:40px; font-weight:700;
+  color:white; text-align:center; line-height:1.1;
+}
+.sq-hero-title em { color:var(--accent); font-style:italic; }
+.sq-intro-body { padding:36px 40px; text-align:center; }
+.sq-intro-body p { color:var(--text-sec); font-size:14px; line-height:1.8; margin-bottom:28px; }
+.sq-style-pills { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:30px; }
+.sq-pill {
+  padding:6px 16px; border-radius:50px;
+  font-size:11px; font-weight:700; letter-spacing:1px;
+  border:1px solid transparent;
+}
+.sq-cta {
+  background:var(--primary); color:var(--primary-text);
+  border:none; padding:16px 44px; border-radius:50px;
+  font-size:14px; font-weight:600; cursor:pointer;
+  letter-spacing:0.5px; transition:all 0.3s;
+  box-shadow:0 8px 28px rgba(93,64,55,0.22);
+  display:inline-flex; align-items:center; gap:10px;
+}
+.sq-cta:hover { transform:translateY(-3px); box-shadow:0 14px 36px rgba(93,64,55,0.3); }
+.sq-cta i { font-size:12px; }
+
+/* PROGRESS */
+.sq-progress { margin-bottom:28px; }
+.sq-prog-track { height:2px; background:var(--border); border-radius:2px; overflow:hidden; margin-bottom:12px; }
+.sq-prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
+.sq-prog-meta { display:flex; justify-content:space-between; align-items:center; }
+.sq-prog-step { font-size:11px; color:var(--text-sec); letter-spacing:2px; text-transform:uppercase; font-weight:600; }
+.sq-prog-dots { display:flex; gap:5px; }
+.sq-dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:0.3s; }
+.sq-dot.done { background:var(--accent); }
+.sq-dot.active { background:var(--primary); transform:scale(1.3); }
+
+/* QUESTION CARD */
+.sq-qcard {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-radius:24px; padding:44px 40px 36px;
+  box-shadow:0 4px 32px rgba(93,64,55,0.06);
+}
+.sq-q-eyebrow { font-size:10px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; font-weight:700; margin-bottom:12px; }
+.sq-q-text {
+  font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:600;
+  color:var(--text); margin-bottom:32px; line-height:1.4;
+}
+
+/* OPTIONS - Full Width */
+.sq-options { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+.sq-option {
+  width:100%; padding:17px 22px;
+  border-radius:14px; border:1.5px solid var(--border);
+  background:var(--bg-main); color:var(--text);
+  cursor:pointer; font-size:14px; font-weight:500;
+  transition:all 0.2s ease; text-align:left;
+  display:flex; align-items:center; gap:16px;
+  font-family:'DM Sans',sans-serif; letter-spacing:0.2px;
+  position:relative; overflow:hidden;
+}
+.sq-option::before {
+  content:''; position:absolute; left:0; top:0; bottom:0;
+  width:3px; background:var(--accent); transform:scaleY(0);
+  transition:transform 0.2s; border-radius:0 2px 2px 0;
+}
+.sq-option:hover { border-color:var(--accent); background:rgba(212,175,55,0.05); transform:translateX(4px); }
+.sq-option:hover::before { transform:scaleY(1); }
+.sq-option.selected { border-color:var(--primary); background:var(--primary); color:var(--primary-text); transform:translateX(4px); }
+.sq-option.selected::before { background:var(--accent); transform:scaleY(1); }
+.sq-opt-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; }
+.sq-opt-text { flex:1; line-height:1.4; }
+.sq-opt-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; transition:0.2s; }
+.sq-option.selected .sq-opt-check { background:var(--accent); border-color:var(--accent); color:#3E2723; }
+
+/* NEXT BTN */
+.sq-next-wrap { display:flex; justify-content:flex-end; clear:both; }
+.sq-next {
+  background:var(--accent); color:#3E2723;
+  border:none; padding:13px 28px; border-radius:50px;
+  font-size:13px; font-weight:700; cursor:pointer; transition:all 0.25s;
+  letter-spacing:0.5px; display:none; align-items:center; gap:8px;
+  font-family:'DM Sans',sans-serif;
+}
+.sq-next:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(212,175,55,0.35); }
+
+/* RESULT */
+.sq-result-header { text-align:center; margin-bottom:32px; }
+.sq-result-eyebrow { font-size:10px; letter-spacing:3px; color:var(--text-sec); text-transform:uppercase; font-weight:700; margin-bottom:10px; }
+.sq-result-name {
+  font-family:'Cormorant Garamond',serif; font-size:52px; font-weight:700;
+  color:var(--primary); line-height:1;
+}
+
+/* FLIP CARD */
+.sq-flip-outer { perspective:1400px; margin-bottom:24px; }
+.sq-flip-card {
+  width:100%; height:420px; position:relative;
+  transform-style:preserve-3d;
+  transition:transform 0.9s cubic-bezier(0.4,0,0.2,1);
+  cursor:pointer; border-radius:22px;
+}
+.sq-flip-card:hover { transform:rotateY(180deg); }
+.sq-flip-front, .sq-flip-back {
+  position:absolute; inset:0; backface-visibility:hidden;
+  border-radius:22px; overflow:hidden;
+}
+.sq-flip-front { background:#111; }
+.sq-flip-img { width:100%; height:100%; object-fit:cover; display:block; transition:0.5s; }
+.sq-flip-card:hover .sq-flip-img { transform:scale(1.05); filter:brightness(0.7); }
+.sq-flip-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+}
+.sq-flip-front-footer {
+  position:absolute; bottom:0; left:0; right:0; padding:28px 30px;
+  display:flex; justify-content:space-between; align-items:flex-end;
+}
+.sq-flip-style-label {
+  font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:700;
+  color:white; text-transform:uppercase; letter-spacing:2px;
+}
+.sq-flip-hint { font-size:11px; color:rgba(255,255,255,0.55); letter-spacing:1.5px; }
+
+/* BACK */
+.sq-flip-back {
+  background:var(--primary); transform:rotateY(180deg);
+  display:flex; align-items:center; justify-content:center;
+}
+.sq-back-content { padding:40px; text-align:center; color:var(--primary-text); width:100%; }
+.sq-back-name {
+  font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:700;
+  color:var(--accent); letter-spacing:4px; text-transform:uppercase; margin-bottom:6px;
+}
+.sq-back-tagline { font-size:11px; opacity:0.5; letter-spacing:2px; margin-bottom:24px; }
+.sq-palette-label { font-size:9px; letter-spacing:3px; opacity:0.5; text-transform:uppercase; margin-bottom:10px; }
+.sq-palette { display:flex; gap:8px; justify-content:center; margin-bottom:22px; }
+.sq-swatch {
+  width:38px; height:38px; border-radius:10px;
+  border:2px solid rgba(255,255,255,0.12);
+  box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  transition:transform 0.2s;
+  position:relative;
+}
+.sq-swatch:hover { transform:scale(1.2) translateY(-2px); }
+.sq-keywords { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-bottom:18px; }
+.sq-keyword {
+  padding:4px 14px; border-radius:50px;
+  border:1px solid rgba(255,255,255,0.2);
+  font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
+  color:rgba(244,239,230,0.8);
+}
+.sq-materials-back { font-size:11px; opacity:0.5; letter-spacing:0.5px; }
+
+/* DESCRIPTION */
+.sq-desc-box {
+  background:var(--bg-card); border:1px solid var(--border);
+  border-left:4px solid var(--accent); border-radius:18px;
+  padding:28px 32px; margin-bottom:24px;
+  display:flex; gap:18px; align-items:flex-start;
+}
+.sq-desc-icon { color:var(--accent); font-size:20px; flex-shrink:0; margin-top:2px; }
+.sq-desc-text { font-size:14.5px; color:var(--text); line-height:1.9; font-weight:400; }
+.sq-retake-wrap { text-align:center; }
+.sq-retake {
+  background:transparent; border:1.5px solid var(--border);
+  color:var(--text); padding:12px 28px; border-radius:50px;
+  font-size:13px; font-weight:600; cursor:pointer; transition:0.25s;
+  display:inline-flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif;
+}
+.sq-retake:hover { border-color:var(--primary); color:var(--primary); }
     </style>
 </head>
 
@@ -164,6 +363,7 @@
             <ul class="nav-links">
                 <li class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i> Home</li>
                 <li class="nav-item" data-target="new-project"><i class="fa-solid fa-plus-circle"></i> New Project</li>
+                <li class="nav-item" data-target="style-quiz"><i class="fa-solid fa-wand-sparkles"></i> Style Quiz</li>
                 <li class="nav-item" data-target="my-designs"><i class="fa-solid fa-folder-open"></i> My Projects</li>
                 <li class="nav-item" data-target="profile"><i class="fa-solid fa-user-tie"></i> My Profile</li>
                 <li class="nav-item" data-target="settings"><i class="fa-solid fa-sliders"></i> Studio Settings</li>
@@ -307,6 +507,23 @@
                       {name:"Organic Minimal",desc:"Curved forms & earthy textures",img:"organ.jpeg"},
                       {name:"Quiet Luxury",desc:"Understated quality, no logos",img:"quiet.jpeg"},
                     ]},
+                    classic: {
+                    label: "Classic",
+                     icon: "✨",
+                     cls: "c-classic", // تأكدي من إضافة هذا الـ Class في الـ CSS بلون ذهبي أو بني
+                     desc: "Timeless elegance rooted in symmetry, heritage, and refined grandeur. The Classic style celebrates the beauty of order — with ornate details, rich textures, and a sophisticated palette that feels both regal and enduringly homey.",
+                     items: [
+        {name: "Baroque Elegance", desc: "Dramatically ornate and regal", img: "baroque.jpeg"},
+        {name: "Neoclassical", desc: "Grand symmetry & Greek influence", img: "neo.jpeg"},
+        {name: "Victorian Charm", desc: "Rich layers and antique patterns", img: "victorian.jpeg"},
+        {name: "English Estate", desc: "Library vibes and dark woods", img: "estate.jpeg"},
+        {name: "Gilded Luxury", desc: "Gold accents and silk textures", img: "gold.jpeg"},
+        {name: "Colonial Classic", desc: "Stately forms and heritage colors", img: "colonial.jpeg"},
+        {name: "Regency Style", desc: "Bold contrast and architectural grace", img: "regency.jpeg"},
+        {name: "Art Deco Classic", desc: "Geometric glam with vintage roots", img: "deco.jpeg"},
+        {name: "Royal Suite", desc: "Plush velvet and crown mouldings", img: "royal.jpeg"}
+    ]
+},
                 };
                 const row=document.getElementById('circlesRow');
                 let activeKey=null;
@@ -362,6 +579,94 @@
                     </a>
                 </div>
             </section>
+
+
+            <!-- STYLE QUIZ -->
+  <section class="view" id="style-quiz">
+    <div class="sq-wrap">
+
+      <!-- INTRO -->
+      <div class="sq-screen" id="sqIntro">
+        <div class="sq-intro">
+          <div class="sq-intro-hero">
+            <div class="sq-hero-badge">10 Questions · 6 Styles</div>
+            <h1 class="sq-hero-title">Discover Your<br>Interior <em>DNA</em></h1>
+          </div>
+          <div class="sq-intro-body">
+            <p>Answer ten carefully crafted questions and we'll reveal the interior style that resonates with who you truly are.</p>
+            <div class="sq-style-pills">
+              <div class="sq-pill" style="background:#D4AF37;color:#3E2723">Modern</div>
+              <div class="sq-pill" style="background:#5D4037;color:#F4EFE6">Bohemian</div>
+              <div class="sq-pill" style="background:#37474F;color:#CFD8DC">Industrial</div>
+              <div class="sq-pill" style="background:#BFA980;color:#3E2723">French Classic</div>
+              <div class="sq-pill" style="background:#EFEBE9;color:#5D4037;border:1px solid #ddd">Minimalist</div>
+              <div class="sq-pill" style="background:#FDFBF7; color:#5D4037; border:1px solid #D4AF37">Classic Elegance</div>
+            </div>
+            <button class="sq-cta" onclick="sqStart()">Begin the Journey <i class="fa-solid fa-arrow-right"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTIONS -->
+      <div class="sq-screen" id="sqQuestions" style="display:none">
+        <div class="sq-progress">
+          <div class="sq-prog-track"><div class="sq-prog-fill" id="sqFill" style="width:10%"></div></div>
+          <div class="sq-prog-meta">
+            <div class="sq-prog-step" id="sqStep">Question 1 of 10</div>
+            <div class="sq-prog-dots" id="sqDots"></div>
+          </div>
+        </div>
+        <div class="sq-qcard">
+          <div class="sq-q-eyebrow" id="sqEyebrow">Question 01</div>
+          <h2 class="sq-q-text" id="sqQText"></h2>
+          <div class="sq-options" id="sqOptions"></div>
+          <div class="sq-next-wrap">
+            <button class="sq-next" id="sqNext" onclick="sqNext()">
+              Continue <i class="fa-solid fa-arrow-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULT -->
+      <div class="sq-screen" id="sqResult" style="display:none">
+        <div class="sq-result-header">
+          <div class="sq-result-eyebrow">Your Interior DNA is</div>
+          <div class="sq-result-name" id="sqResultName"></div>
+        </div>
+        <div class="sq-flip-outer">
+          <div class="sq-flip-card">
+            <div class="sq-flip-front">
+              <img id="sqResultImg" src="" alt="" class="sq-flip-img">
+              <div class="sq-flip-overlay"></div>
+              <div class="sq-flip-front-footer">
+                <div class="sq-flip-style-label" id="sqFlipLabel"></div>
+                <div class="sq-flip-hint">Hover to reveal ✦</div>
+              </div>
+            </div>
+            <div class="sq-flip-back">
+              <div class="sq-back-content">
+                <div class="sq-back-name" id="sqBackName"></div>
+                <div class="sq-back-tagline" id="sqBackTagline"></div>
+                <div class="sq-palette-label">Signature Palette</div>
+                <div class="sq-palette" id="sqPalette"></div>
+                <div class="sq-keywords" id="sqKeywords"></div>
+                <div class="sq-materials-back" id="sqMaterials"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sq-desc-box">
+          <div class="sq-desc-icon"><i class="fa-solid fa-quote-left"></i></div>
+          <p class="sq-desc-text" id="sqDesc"></p>
+        </div>
+        <div class="sq-retake-wrap">
+          <button class="sq-retake" onclick="sqReset()"><i class="fa-solid fa-rotate-left"></i> Retake Quiz</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
 
             <section class="view" id="my-designs">
                 <h2>My Projects Library</h2>
@@ -470,6 +775,217 @@
             bg.style.transform = `translate(${(innerWidth/2 - e.pageX)/80}px, ${(innerHeight/2 - e.pageY)/80}px) scale(1.1)`;
         };
         document.getElementById("username").innerText = "Hi, " + localStorage.getItem("userName");
+
+
+
+        // ===================== STYLE QUIZ =====================
+    const sqQuestions = [
+      { q:"You walk into a room — what instantly draws your attention?", opts:[
+        {icon:"🪟",text:"Floods of natural light and open, breathing space",scores:{modern:2,minimalist:2}},
+        {icon:"🎨",text:"Rich, layered colors and patterns on every surface",scores:{boho:2,french:1}},
+        {icon:"🧱",text:"Raw exposed brick or rough concrete walls",scores:{industrial:3}},
+        {icon:"✨",text:"Ornate details — gilded frames and carved mouldings",scores:{french:3, classic:2}},
+        {icon:"🌿",text:"Lush greenery, organic shapes and natural textures",scores:{boho:2,minimalist:1}},
+      ]},
+      { q:"Which color palette speaks to your soul?", opts:[
+        {icon:"🤍",text:"Pure whites, soft creams and warm greys",scores:{minimalist:3}},
+        {icon:"🟤",text:"Terracotta, rust, warm amber and dusty sage",scores:{boho:3}},
+        {icon:"🩶",text:"Deep charcoal, slate grey and blackened steel",scores:{industrial:3}},
+        {icon:"🥂",text:"Blush, ivory, dusty rose and antique gold",scores:{french:3, classic:2}},
+        {icon:"🌲",text:"Natural oak, warm beige and muted olive",scores:{modern:2,minimalist:1}},
+      ]},
+      { q:"Your ideal sofa looks like:", opts:[
+        {icon:"🛋️",text:"Low-profile, clean-lined — functional and sleek",scores:{modern:2,minimalist:2}},
+        {icon:"🪑",text:"Overstuffed and covered in throws, cushions and texture",scores:{boho:3}},
+        {icon:"⚙️",text:"Dark leather with exposed metal legs — bold and raw",scores:{industrial:3}},
+        {icon:"🏛️",text:"Curved camelback velvet with carved gilded feet",scores:{french:3, classic:2}},
+        {icon:"🪨",text:"Simple linen or bouclé — tactile and understated",scores:{minimalist:2,modern:1}},
+      ]},
+      { q:"How do you feel about decorative objects?", opts:[
+        {icon:"❌",text:"Nothing unnecessary — surfaces must stay completely clear",scores:{minimalist:3}},
+        {icon:"🕯️",text:"One or two carefully chosen statement pieces, nothing more",scores:{modern:3}},
+        {icon:"🖼️",text:"Gallery walls, layered prints and framed art everywhere",scores:{french:2,boho:1,classic:2}},
+        {icon:"🌺",text:"More is more — plants, ceramics, rugs, throws everywhere",scores:{boho:3}},
+        {icon:"🔩",text:"Functional objects are the decoration — nothing purely decorative",scores:{industrial:3}},
+      ]},
+      { q:"Your dream ceiling looks like:", opts:[
+        {icon:"⬜",text:"Flat pure white — clean and utterly distraction-free",scores:{minimalist:3}},
+        {icon:"🏚️",text:"Exposed pipes, ductwork and raw structural beams",scores:{industrial:3}},
+        {icon:"💫",text:"Ornate plaster mouldings and a crystal chandelier and classical",scores:{french:3, classic:2}},
+        {icon:"🪵",text:"Warm wooden beams or a beautiful vaulted arch",scores:{boho:2,modern:1}},
+        {icon:"🌑",text:"Painted deep black — moody, dramatic and bold",scores:{industrial:2,modern:1}},
+      ]},
+      { q:"Pick your ideal flooring:", opts:[
+        {icon:"🪵",text:"Pale wide-plank oak — minimal, warm and timeless",scores:{modern:2,minimalist:2}},
+        {icon:"🏺",text:"Hand-painted Zellige tiles or terracotta",scores:{boho:3}},
+        {icon:"🧱",text:"Polished concrete — raw, seamless and uncompromising",scores:{industrial:3}},
+        {icon:"🌹",text:"Ornate herringbone parquet — grand and classical",scores:{french:3, classic:2}},
+        {icon:"🪨",text:"Honed travertine or marble — quiet, understated luxury",scores:{minimalist:2,french:1}},
+      ]},
+      { q:"The lighting in your space must be:", opts:[
+        {icon:"💡",text:"Warm Edison bulbs — intimate, moody and golden and Luxurious",scores:{industrial:2,boho:1, classic:2}},
+        {icon:"🕯️",text:"Crystal chandeliers, candles and ornate wall sconces",scores:{french:3}},
+        {icon:"☀️",text:"Bright and completely natural — floor-to-ceiling windows",scores:{minimalist:2,modern:1}},
+        {icon:"🌙",text:"Layered — floor lamps, pendants, candles and strips",scores:{boho:2,modern:1}},
+        {icon:"🔦",text:"Track lighting and industrial pipe fixtures",scores:{industrial:3}},
+      ]},
+      { q:"One word that perfectly describes your dream home:", opts:[
+        {icon:"🧘",text:"Serene — a space where I can truly, deeply exhale",scores:{minimalist:3}},
+        {icon:"🔥",text:"Soulful — layered with stories, warmth and memories",scores:{boho:3}},
+        {icon:"👑",text:"Grand — a space that commands presence and awe",scores:{french:3}},
+        {icon:"⚡",text:"Edgy — raw, unapologetic and completely unforgettable",scores:{industrial:3}},
+        {icon:"✦",text:"Refined — quietly sophisticated, never loud or obvious",scores:{modern:3, classic:2}},
+      ]},
+      { q:"Your walls are:", opts:[
+        {icon:"🤍",text:"Stark white — nothing to distract or compete with space",scores:{minimalist:3, classic:2}},
+        {icon:"🎭",text:"Covered in tapestries, woven art and layered prints",scores:{boho:3}},
+        {icon:"🧱",text:"Raw exposed brick or rough, unfinished concrete",scores:{industrial:3}},
+        {icon:"💚",text:"Painted deep forest green or dusty Parisian blue",scores:{french:2,modern:1}},
+        {icon:"🎨",text:"Warm limewash or textured Venetian plaster",scores:{boho:1,french:2}},
+      ]},
+      { q:"Your ideal Saturday morning at home looks like:", opts:[
+        {icon:"📖",text:"Reading in a sun-drenched, perfectly minimal corner",scores:{minimalist:2,modern:1}},
+        {icon:"🕯️",text:"Espresso under a gilded mirror, wearing silk — très chic",scores:{french:3, classic:2}},
+        {icon:"🌿",text:"Surrounded by plants, incense and warm woven blankets",scores:{boho:3}},
+        {icon:"🎵",text:"Vinyl record echoing through a raw, dramatic loft space",scores:{industrial:3}},
+        {icon:"☕",text:"Clean desk, clear surfaces, open windows — total clarity",scores:{modern:2,minimalist:1}},
+      ]},
+    ];
+
+    const sqStyles = {
+      modern:{ name:"Modern", tagline:"Refined · Functional · Timeless",
+        img:"Modern.jpeg",
+        colors:["#E8E0D5","#C4B5A0","#5D4037","#D4AF37","#37474F"],
+        keywords:["Clean Lines","Functional","Refined","Open Space","Sleek"],
+        materials:"Glass · Brushed Steel · Light Oak · Polished Concrete",
+        desc:"You are drawn to spaces where every element earns its place. Clean geometry, restrained palettes, and the beauty of negative space define your world. Your home is a curated reflection of refined taste — effortlessly sophisticated without ever trying too hard."
+      },
+      minimalist:{ name:"Minimalist", tagline:"Intentional · Serene · Pure",
+        img:"minimalist.jpeg",
+        colors:["#FFFFFF","#F5F5F0","#E0DDD8","#9E9E9E","#212121"],
+        keywords:["Intentional","Serene","Pure","Still","Quiet Luxury"],
+        materials:"White Plaster · Honed Concrete · Raw Linen · Natural Stone",
+        desc:"You believe a room should breathe. Every object earns its place — nothing exists without purpose. You find deep comfort in stillness, in rooms that feel like a long, slow exhale. Your style is the true and ultimate luxury of less."
+      },
+      boho:{ name:"Bohemian", tagline:"Free-Spirited · Warm · Soulful",
+        img: "dashboard/boho.jpeg",
+        colors:["#C0622A","#8D4A2A","#D4AF37","#6D4C41","#A5C4A0"],
+        keywords:["Free-Spirited","Layered","Warm","Eclectic","Soulful"],
+        materials:"Rattan · Macramé · Terracotta · Jute · Handwoven Textiles",
+        desc:"Your home is a living journal — every piece has a story, a journey, a memory. You layer textures, patterns, and cultures into a space that feels deeply personal and endlessly warm. Rules were made for someone else's living room."
+      },
+      french:{ name:"French Classic", tagline:"Elegant · Grand · Timeless",
+        img:"french.jpeg",
+        colors:["#BFA980","#D4AF37","#8C7B6B","#EDE0D0","#4A3728"],
+        keywords:["Elegant","Ornate","Grand","Timeless","Refined"],
+        materials:"Gilded Wood · Velvet · Carrara Marble · Plaster Mouldings",
+        desc:"You have an eye for grandeur — the curve of a Louis chair, the shimmer of a chandelier, the weight of a gilded frame. Your space is a love letter to old-world elegance, where beauty is never accidental and every detail tells of a life beautifully and deliberately lived."
+      },
+      industrial:{ name:"Industrial", tagline:"Raw · Bold · Unapologetic",
+        img:"industirial.jpeg",
+        colors:["#37474F","#263238","#78909C","#8D6E63","#D4AF37"],
+        keywords:["Raw","Bold","Edgy","Authentic","Urban"],
+        materials:"Blackened Steel · Raw Concrete · Reclaimed Wood · Exposed Brick",
+        desc:"You appreciate honesty in design — materials left raw, structures left visible, beauty found in pure function. Your space has the energy of a converted warehouse: dramatic, unapologetic, and completely unforgettable. You don't decorate. You inhabit."
+      },
+      classic: { 
+        name: "Classic Elegance", 
+        tagline: "Timeless · Symmetrical · Regal",
+        img: "classic.jpg", 
+        colors: ["#5d4037", "#d4af37", "#f5f5dc", "#2c3e50", "#ffffff"],
+        keywords: ["Symmetrical", "Formal", "Sophisticated", "Heritage", "Luxurious", "classical"],
+        materials: "Polished Marble · Velvet · Mahogany Wood · Crystal · Silk Wallpapers",
+        desc: "Your style is rooted in the grand traditions of European nobility. You value symmetry, balance, and a sense of history in every corner. For you, a home isn't just a place to live; it's a curated gallery of timeless elegance and refined architectural order."
+      }
+    };
+
+    let sqCurrent = 0;
+    let sqScores = {modern:0,minimalist:0,boho:0,french:0,industrial:0,classic:0};
+    let sqAnswered = false;
+
+    function sqStart() {
+      document.getElementById('sqIntro').style.display = 'none';
+      document.getElementById('sqQuestions').style.display = 'block';
+      sqBuildDots();
+      sqShowQ();
+    }
+
+    function sqBuildDots() {
+      const dots = document.getElementById('sqDots');
+      dots.innerHTML = sqQuestions.map((_,i) => `<div class="sq-dot" id="dot-${i}"></div>`).join('');
+    }
+
+    function sqShowQ() {
+      sqAnswered = false;
+      const next = document.getElementById('sqNext');
+      next.style.display = 'none';
+      const q = sqQuestions[sqCurrent];
+      document.getElementById('sqEyebrow').innerText = `Question ${String(sqCurrent+1).padStart(2,'0')}`;
+      document.getElementById('sqQText').innerText = q.q;
+      document.getElementById('sqStep').innerText = `Question ${sqCurrent+1} of 10`;
+      document.getElementById('sqFill').style.width = `${((sqCurrent+1)/10)*100}%`;
+
+      for(let i=0;i<10;i++) {
+        const d = document.getElementById('dot-'+i);
+        if(!d) continue;
+        d.className = 'sq-dot' + (i < sqCurrent ? ' done' : i === sqCurrent ? ' active' : '');
+      }
+
+      const el = document.getElementById('sqOptions');
+      el.innerHTML = '';
+      q.opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'sq-option';
+        btn.innerHTML = `<span class="sq-opt-icon">${opt.icon}</span><span class="sq-opt-text">${opt.text}</span><span class="sq-opt-check"><i class="fa-solid fa-check" style="display:none"></i></span>`;
+        btn.onclick = () => sqSelect(btn, opt.scores);
+        el.appendChild(btn);
+      });
+    }
+
+    function sqSelect(btn, optScores) {
+      if(sqAnswered) return;
+      sqAnswered = true;
+      document.querySelectorAll('.sq-option').forEach(b => {
+        b.classList.remove('selected');
+        b.querySelector('.fa-check').style.display = 'none';
+      });
+      btn.classList.add('selected');
+      btn.querySelector('.fa-check').style.display = 'block';
+      Object.entries(optScores).forEach(([s,v]) => { sqScores[s] += v; });
+      const next = document.getElementById('sqNext');
+      next.style.display = 'flex';
+    }
+
+    function sqNext() {
+      sqCurrent++;
+      if(sqCurrent >= sqQuestions.length) { sqShowResult(); }
+      else { sqShowQ(); }
+    }
+
+    function sqShowResult() {
+      document.getElementById('sqQuestions').style.display = 'none';
+      document.getElementById('sqResult').style.display = 'block';
+      const top = Object.entries(sqScores).sort((a,b) => b[1]-a[1])[0][0];
+      const r = sqStyles[top];
+      document.getElementById('sqResultName').innerText = r.name;
+      document.getElementById('sqResultImg').src = r.img;
+      document.getElementById('sqFlipLabel').innerText = r.name;
+      document.getElementById('sqBackName').innerText = r.name;
+      document.getElementById('sqBackTagline').innerText = r.tagline;
+      document.getElementById('sqDesc').innerText = r.desc;
+      document.getElementById('sqMaterials').innerText = r.materials;
+      document.getElementById('sqPalette').innerHTML = r.colors.map(c => `<div class="sq-swatch" style="background:${c}" title="${c}"></div>`).join('');
+      document.getElementById('sqKeywords').innerHTML = r.keywords.map(k => `<span class="sq-keyword">${k}</span>`).join('');
+    }
+
+    function sqReset() {
+      sqCurrent = 0;
+      sqScores = {modern:0,minimalist:0,boho:0,french:0,industrial:0,classic:0};
+      sqAnswered = false;
+      document.getElementById('sqResult').style.display = 'none';
+      document.getElementById('sqIntro').style.display = 'block';
+    }
+
     </script>
     <div class="lb-wrap" id="lb">
                   <div class="lb-box">
