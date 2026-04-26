@@ -440,6 +440,7 @@
                   </div>
                 </div>
 
+                
                 <script>
                 const styleData={
                   modern:{label:"Modern",icon:"🛋",cls:"c-modern",
@@ -737,6 +738,11 @@
                     <button class="btn-action" style="width: 100%; margin-top: 30px;">Apply All Changes</button>
                 </div>
             </section>
+
+            <footer style="text-align: center; padding: 20px; font-size: 14px;">
+             <p>Copyright &copy; <span class="year"></span> [Smart Space Designer]. All Rights Reserved.</p>
+             </footer>
+            
         </main>
     </div>
 
@@ -985,6 +991,11 @@
       document.getElementById('sqResult').style.display = 'none';
       document.getElementById('sqIntro').style.display = 'block';
     }
+
+         // This updates the year for both locations at once
+    const years = document.querySelectorAll('.year');
+    years.forEach(el => el.textContent = new Date().getFullYear());
+
 
     </script>
     <div class="lb-wrap" id="lb">
