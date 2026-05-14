@@ -1,0 +1,1269 @@
+<?php
+session_start();
+require '../db.php'; 
+
+if (!isset($_SESSION['loggedin'])) {
+    header("Location: ../login/Login.html");
+    exit;
+}
+
+$userId = $_SESSION['user_id'];
+
+// نجيب بيانات اليوزر
+$stmt = $pdo->prepare("SELECT email, created_at, preferred_style, dob FROM users WHERE id = ?");
+$stmt->execute([$userId]);
+$user = $stmt->fetch();
+
+// نعد المشاريع
+$stmtProject = $pdo->prepare("SELECT COUNT(*) FROM projects WHERE user_id = ?");
+$stmtProject->execute([$userId]);
+$projectCount = $stmtProject->fetchColumn();
+
+// نجيب تفاصيل المشاريع نفسها عشان نعرضها في الكروت
+$stmtFetch = $pdo->prepare("SELECT * FROM projects WHERE user_id = ? ORDER BY updated_at DESC");
+$stmtFetch->execute([$userId]);
+$myProjects = $stmtFetch->fetchAll();
+
+// كود حساب السن وسنة الميلاد
+$age = 'N/A';
+$birthYear = 'N/A';
+if (!empty($user['dob'])) {
+    $dob = new DateTime($user['dob']);
+    $today = new DateTime('today');
+    $age = $dob->diff($today)->y; 
+    $birthYear = $dob->format('Y'); 
+}
+?>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSD Studio - Project Central</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Variables tanya ll dark/light mode bt-matshe el CSS el 5arigy */
+        :root {
+            --bg-main: #F4EFE6;
+            --bg-sidebar: #5D4037;
+            --bg-card: #ffffff;
+            --primary: #5D4037;
+            --primary-text: #F4EFE6;
+            --accent: #d4af37;
+            --text: #5D4037;
+            --text-sec: #8D6E63;
+            --border: rgba(93, 64, 55, 0.1);
+            --sidebar-width: 300px;
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #0a192f;
+            --bg-sidebar: #112240;
+            --bg-card: #1e293b;
+            --primary: #E6D5C3;
+            --primary-text: #1e293b;
+            --accent: #d4af37;
+            --text: #f8f9fc;
+            --text-sec: #94a3b8;
+            --border: #233554;
+        }
+
+        /* Tzbitat 3ama ll page kolha */
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-main); color: var(--text); transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
+
+        /* El shabaka elly wara fel khalfya */
+        .blueprint-bg {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(var(--primary) 0.5px, transparent 0.5px);
+            background-size: 40px 40px; opacity: 0.1; z-index: -1;
+            pointer-events: none; transition: 0.3s;
+        }
+
+        .app-container { display: flex; }
+
+        /* CSS bta3 el Sidebar */
+        .sidebar {
+            width: var(--sidebar-width); background: var(--bg-sidebar);
+            height: 100vh; position: fixed; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 100; transition: 0.3s;
+        }
+
+        .sidebar-header { padding: 30px; font-weight: 700; color: var(--accent); font-size: 22px; display: flex; align-items: center; gap: 10px; transition: 0.3s; }
+
+        .nav-links { list-style: none; padding: 20px; flex: 1; }
+        .nav-item {
+            padding: 12px 15px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: #F4EFE6;
+            opacity: 1;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+
+        .nav-item.active {
+            background: #F4EFE6;
+            color: #5D4037;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-item:hover:not(.active) {
+            background: #F4EFE6;
+            color: #5D4037;
+        }
+
+        .nav-item.active i,
+        .nav-item:hover i {
+            color: #5D4037;
+        }
+
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
+
+        /* CSS bta3 el mo7tawa el r2esy (Main content) */
+        .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: 40px; }
+        
+        /* === IMPORTANT: El Views === */
+        .view { display: none; animation: fadeIn 0.5s ease; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Home Content Styles */
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-icon { background: var(--primary); color: var(--primary-text); border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-icon:hover { transform: scale(1.1); }
+
+        .section-title { margin: 30px 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        .recommended-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
+        .rec-item { min-width: 100px; text-align: center; cursor: pointer; }
+        .rec-circle { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; transition: 0.3s; }
+        .rec-item:hover .rec-circle { transform: scale(1.1); background: var(--primary); color: var(--primary-text); }
+
+        .grid-container { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        .design-card { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.3s; cursor: pointer; }
+        .design-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card-img { height: 150px; background: #ddd; background-size: cover; background-position: center; }
+        .card-body { padding: 15px; }
+
+        .text-card { padding: 25px; border-left: 5px solid var(--accent); }
+        .text-card h3 { margin-bottom: 5px; font-size: 18px; }
+        .text-card p { font-size: 13px; color: var(--text-sec); font-weight: 600; }
+
+        .doors-container { display: flex; gap: 20px; height: 450px; margin-top: 20px; }
+        .room-door { flex: 1; position: relative; border-radius: 20px; overflow: hidden; border: 2px solid var(--border); cursor: pointer; transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .room-door .door-bg { width: 100%; height: 100%; background-size: cover; background-position: center; filter: grayscale(100%) brightness(40%); transition: 0.5s ease; }
+        .room-door .door-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); color: white; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; opacity: 0; transition: 0.5s ease; z-index: 2; text-shadow: 0 4px 15px #000; }
+        .room-door:hover { flex: 2; border-color: var(--accent); }
+        .room-door:hover .door-bg { filter: grayscale(0%) brightness(100%); transform: scale(1.1); }
+        .room-door:hover .door-label { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        .glass-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 25px; transition: 0.3s; }
+
+        .profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 35px; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; }
+        .profile-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .stat-item { text-align: center; padding: 15px; background: rgba(150, 150, 150, 0.05); border-radius: 12px; border: 1px solid var(--border); }
+        .stat-item strong { display: block; font-size: 18px; color: var(--primary); transition: 0.3s; }
+        .stat-item span { font-size: 11px; color: var(--text-sec); text-transform: uppercase; font-weight: 700; }
+
+        /* Settings Styles */
+        .settings-section h3 { margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; transition: 0.3s; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--border); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-info { display: flex; flex-direction: column; gap: 4px; }
+        .settings-info span { font-size: 13px; color: var(--text-sec); }
+
+        /* Custom Select & Switch */
+        select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text); outline: none; transition: 0.3s; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .4s; border-radius: 22px; }
+        input:checked + .slider { background: var(--primary); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .btn-action { background: var(--primary); color: var(--primary-text); border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 20px; }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+        .sidebar { animation: sidebarSlideIn 0.6s cubic-bezier(0.4,0,0.2,1) 0.1s both; }
+        @keyframes sidebarSlideIn { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .main-content { animation: contentFadeIn 0.6s ease 0.55s both; }
+        @keyframes contentFadeIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        
+        /* ===================== STYLE QUIZ ===================== */
+        .sq-wrap { max-width:700px; margin:0 auto; padding:10px 0 60px; }
+        .sq-screen { animation:fadeIn 0.45s ease; }
+
+        /* INTRO */
+        .sq-intro {
+        background:var(--bg-card); border:1px solid var(--border);
+        border-radius:28px; overflow:hidden;
+        box-shadow:0 8px 40px rgba(93,64,55,0.08);
+        }
+        .sq-intro-hero {
+        height:220px;
+        background:linear-gradient(135deg, #5D4037 0%, #3E2723 50%, #1a0f0b 100%);
+        position:relative; overflow:hidden;
+        display:flex; align-items:center; justify-content:center; flex-direction:column;
+        }
+        .sq-intro-hero::before {
+        content:''; position:absolute; inset:0;
+        background-image: radial-gradient(rgba(212,175,55,0.15) 1px, transparent 1px);
+        background-size:28px 28px;
+        }
+        .sq-hero-badge {
+        position:relative; z-index:1;
+        background:rgba(212,175,55,0.15); border:1px solid rgba(212,175,55,0.3);
+        color:var(--accent); font-size:10px; font-weight:700; letter-spacing:3px;
+        text-transform:uppercase; padding:6px 18px; border-radius:50px; margin-bottom:16px;
+        }
+        .sq-hero-title {
+        position:relative; z-index:1;
+        font-family:'Cormorant Garamond',serif; font-size:40px; font-weight:700;
+        color:white; text-align:center; line-height:1.1;
+        }
+        .sq-hero-title em { color:var(--accent); font-style:italic; }
+        .sq-intro-body { padding:36px 40px; text-align:center; }
+        .sq-intro-body p { color:var(--text-sec); font-size:14px; line-height:1.8; margin-bottom:28px; }
+        .sq-style-pills { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:30px; }
+        .sq-pill {
+        padding:6px 16px; border-radius:50px;
+        font-size:11px; font-weight:700; letter-spacing:1px;
+        border:1px solid transparent;
+        }
+        .sq-cta {
+        background:var(--primary); color:var(--primary-text);
+        border:none; padding:16px 44px; border-radius:50px;
+        font-size:14px; font-weight:600; cursor:pointer;
+        letter-spacing:0.5px; transition:all 0.3s;
+        box-shadow:0 8px 28px rgba(93,64,55,0.22);
+        display:inline-flex; align-items:center; gap:10px;
+        }
+        .sq-cta:hover { transform:translateY(-3px); box-shadow:0 14px 36px rgba(93,64,55,0.3); }
+        .sq-cta i { font-size:12px; }
+
+        /* PROGRESS */
+        .sq-progress { margin-bottom:28px; }
+        .sq-prog-track { height:2px; background:var(--border); border-radius:2px; overflow:hidden; margin-bottom:12px; }
+        .sq-prog-fill { height:100%; background:var(--accent); border-radius:2px; transition:width 0.5s cubic-bezier(0.4,0,0.2,1); }
+        .sq-prog-meta { display:flex; justify-content:space-between; align-items:center; }
+        .sq-prog-step { font-size:11px; color:var(--text-sec); letter-spacing:2px; text-transform:uppercase; font-weight:600; }
+        .sq-prog-dots { display:flex; gap:5px; }
+        .sq-dot { width:6px; height:6px; border-radius:50%; background:var(--border); transition:0.3s; }
+        .sq-dot.done { background:var(--accent); }
+        .sq-dot.active { background:var(--primary); transform:scale(1.3); }
+
+        /* QUESTION CARD */
+        .sq-qcard {
+        background:var(--bg-card); border:1px solid var(--border);
+        border-radius:24px; padding:44px 40px 36px;
+        box-shadow:0 4px 32px rgba(93,64,55,0.06);
+        }
+        .sq-q-eyebrow { font-size:10px; letter-spacing:3px; color:var(--accent); text-transform:uppercase; font-weight:700; margin-bottom:12px; }
+        .sq-q-text {
+        font-family:'Cormorant Garamond',serif; font-size:26px; font-weight:600;
+        color:var(--text); margin-bottom:32px; line-height:1.4;
+        }
+
+        /* OPTIONS - Full Width */
+        .sq-options { display:flex; flex-direction:column; gap:10px; margin-bottom:28px; }
+        .sq-option {
+        width:100%; padding:17px 22px;
+        border-radius:14px; border:1.5px solid var(--border);
+        background:var(--bg-main); color:var(--text);
+        cursor:pointer; font-size:14px; font-weight:500;
+        transition:all 0.2s ease; text-align:left;
+        display:flex; align-items:center; gap:16px;
+        font-family:'DM Sans',sans-serif; letter-spacing:0.2px;
+        position:relative; overflow:hidden;
+        }
+        .sq-option::before {
+        content:''; position:absolute; left:0; top:0; bottom:0;
+        width:3px; background:var(--accent); transform:scaleY(0);
+        transition:transform 0.2s; border-radius:0 2px 2px 0;
+        }
+        .sq-option:hover { border-color:var(--accent); background:rgba(212,175,55,0.05); transform:translateX(4px); }
+        .sq-option:hover::before { transform:scaleY(1); }
+        .sq-option.selected { border-color:var(--primary); background:var(--primary); color:var(--primary-text); transform:translateX(4px); }
+        .sq-option.selected::before { background:var(--accent); transform:scaleY(1); }
+        .sq-opt-icon { font-size:22px; flex-shrink:0; width:32px; text-align:center; }
+        .sq-opt-text { flex:1; line-height:1.4; }
+        .sq-opt-check { width:20px; height:20px; border-radius:50%; border:2px solid var(--border); flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:10px; transition:0.2s; }
+        .sq-option.selected .sq-opt-check { background:var(--accent); border-color:var(--accent); color:#3E2723; }
+
+        /* NEXT BTN */
+        .sq-next-wrap { display:flex; justify-content:flex-end; clear:both; }
+        .sq-next {
+        background:var(--accent); color:#3E2723;
+        border:none; padding:13px 28px; border-radius:50px;
+        font-size:13px; font-weight:700; cursor:pointer; transition:all 0.25s;
+        letter-spacing:0.5px; display:none; align-items:center; gap:8px;
+        font-family:'DM Sans',sans-serif;
+        }
+        .sq-next:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(212,175,55,0.35); }
+
+        /* RESULT */
+        .sq-result-header { text-align:center; margin-bottom:32px; }
+        .sq-result-eyebrow { font-size:10px; letter-spacing:3px; color:var(--text-sec); text-transform:uppercase; font-weight:700; margin-bottom:10px; }
+        .sq-result-name {
+        font-family:'Cormorant Garamond',serif; font-size:52px; font-weight:700;
+        color:var(--primary); line-height:1;
+        }
+
+        /* FLIP CARD */
+        .sq-flip-outer { perspective:1400px; margin-bottom:24px; }
+        .sq-flip-card {
+        width:100%; height:420px; position:relative;
+        transform-style:preserve-3d;
+        transition:transform 0.9s cubic-bezier(0.4,0,0.2,1);
+        cursor:pointer; border-radius:22px;
+        }
+        .sq-flip-card:hover { transform:rotateY(180deg); }
+        .sq-flip-front, .sq-flip-back {
+        position:absolute; inset:0; backface-visibility:hidden;
+        border-radius:22px; overflow:hidden;
+        }
+        .sq-flip-front { background:#111; }
+        .sq-flip-img { width:100%; height:100%; object-fit:cover; display:block; transition:0.5s; }
+        .sq-flip-card:hover .sq-flip-img { transform:scale(1.05); filter:brightness(0.7); }
+        .sq-flip-overlay {
+        position:absolute; inset:0;
+        background:linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%, transparent 100%);
+        }
+        .sq-flip-front-footer {
+        position:absolute; bottom:0; left:0; right:0; padding:28px 30px;
+        display:flex; justify-content:space-between; align-items:flex-end;
+        }
+        .sq-flip-style-label {
+        font-family:'Cormorant Garamond',serif; font-size:30px; font-weight:700;
+        color:white; text-transform:uppercase; letter-spacing:2px;
+        }
+        .sq-flip-hint { font-size:11px; color:rgba(255,255,255,0.55); letter-spacing:1.5px; }
+
+        /* BACK */
+        .sq-flip-back {
+        background:var(--primary); transform:rotateY(180deg);
+        display:flex; align-items:center; justify-content:center;
+        }
+        .sq-back-content { padding:40px; text-align:center; color:var(--primary-text); width:100%; }
+        .sq-back-name {
+        font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:700;
+        color:var(--accent); letter-spacing:4px; text-transform:uppercase; margin-bottom:6px;
+        }
+        .sq-back-tagline { font-size:11px; opacity:0.5; letter-spacing:2px; margin-bottom:24px; }
+        .sq-palette-label { font-size:9px; letter-spacing:3px; opacity:0.5; text-transform:uppercase; margin-bottom:10px; }
+        .sq-palette { display:flex; gap:8px; justify-content:center; margin-bottom:22px; }
+        .sq-swatch {
+        width:38px; height:38px; border-radius:10px;
+        border:2px solid rgba(255,255,255,0.12);
+        box-shadow:0 4px 12px rgba(0,0,0,0.3);
+        transition:transform 0.2s;
+        position:relative;
+        }
+        .sq-swatch:hover { transform:scale(1.2) translateY(-2px); }
+        .sq-keywords { display:flex; flex-wrap:wrap; gap:7px; justify-content:center; margin-bottom:18px; }
+        .sq-keyword {
+        padding:4px 14px; border-radius:50px;
+        border:1px solid rgba(255,255,255,0.2);
+        font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase;
+        color:rgba(244,239,230,0.8);
+        }
+        .sq-materials-back { font-size:11px; opacity:0.5; letter-spacing:0.5px; }
+
+        /* DESCRIPTION */
+        .sq-desc-box {
+        background:var(--bg-card); border:1px solid var(--border);
+        border-left:4px solid var(--accent); border-radius:18px;
+        padding:28px 32px; margin-bottom:24px;
+        display:flex; gap:18px; align-items:flex-start;
+        }
+        .sq-desc-icon { color:var(--accent); font-size:20px; flex-shrink:0; margin-top:2px; }
+        .sq-desc-text { font-size:14.5px; color:var(--text); line-height:1.9; font-weight:400; }
+        .sq-retake-wrap { text-align:center; }
+        .sq-retake {
+        background:transparent; border:1.5px solid var(--border);
+        color:var(--text); padding:12px 28px; border-radius:50px;
+        font-size:13px; font-weight:600; cursor:pointer; transition:0.25s;
+        display:inline-flex; align-items:center; gap:8px; font-family:'DM Sans',sans-serif;
+        }
+        .sq-retake:hover { border-color:var(--primary); color:var(--primary); }
+    </style>
+</head>
+
+<body>
+    <div class="blueprint-bg" id="parallaxBg"></div>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header"><i class="fa-solid fa-wand-magic-sparkles"></i> SSD Studio</div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i> Home</li>
+                <li class="nav-item" data-target="new-project"><i class="fa-solid fa-plus-circle"></i> New Project</li>
+                <li class="nav-item" data-target="style-quiz"><i class="fa-solid fa-wand-sparkles"></i> Style Quiz</li>
+                <li class="nav-item" data-target="furniture-hub"><i class="fa-solid fa-cart-shopping"></i> Furniture Hub</li>
+                <li class="nav-item" data-target="my-designs"><i class="fa-solid fa-folder-open"></i> My Projects</li>
+                <li class="nav-item" data-target="profile"><i class="fa-solid fa-user-tie"></i> My Profile</li>
+                <li class="nav-item" data-target="settings"><i class="fa-solid fa-sliders"></i> Studio Settings</li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="nav-item" onclick="window.location.href='../login/Login.html'" style="color: #e74c3c;">
+                    <i class="fa-solid fa-power-off"></i> Logout
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            
+            <section class="view active" id="home">
+                <div class="header-flex">
+                    <h1 id="username" style="font-size: 32px;">Hi, <?php echo htmlspecialchars($_SESSION['user_name']); ?>! 👋</h1>                    
+                    <button class="btn-icon" onclick="document.querySelector('[data-target=\'new-project\']').click()" title="Create New Project">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+                <p style="color: var(--text-sec);">Welcome back to your premium studio.</p>
+
+                <style>
+                .circles-row { display:flex; gap:28px; margin-bottom:2rem; flex-wrap:wrap; align-items:flex-start; }
+                .circle-item { display:flex; flex-direction:column; align-items:center; gap:8px; }
+                .circle-wrap { width:70px; height:70px; perspective:600px; cursor:pointer; flex-shrink:0; }
+                .circle-inner { width:100%; height:100%; position:relative; transform-style:preserve-3d; transition:transform 0.6s cubic-bezier(0.4,0,0.2,1); border-radius:50%; }
+                .circle-wrap.flipped .circle-inner { transform:rotateY(180deg); }
+                .circle-front, .circle-back-sm { position:absolute; inset:0; border-radius:50%; backface-visibility:hidden; display:flex; align-items:center; justify-content:center; font-size:20px; }
+                .circle-back-sm { transform:rotateY(180deg); background:#5D4037; color:#D4AF37; font-size:11px; font-weight:700; }
+                .circle-label { font-size:13px; color:#5D4037; font-weight:600; }
+                .c-modern { background:#D4AF37; } 
+                .c-boho { background:#7B5E3A; } 
+                .c-industrial { background:#1B3A5C; } 
+                .c-french { background:#BFA980; } 
+                .c-minimalist { background:#2C1B17; }
+                
+                .big-card-wrap { display:none; margin-bottom:2rem; }
+                .big-card-wrap.open { display:block; animation:slideDown 0.4s ease; }
+                @keyframes slideDown { from{opacity:0; transform:translateY(-10px)} to{opacity:1; transform:translateY(0)} }
+                .big-card { border-radius:18px; overflow:hidden; border:1.5px solid rgba(93,64,55,0.12); }
+                .big-card-header { background:#5D4037; padding:1.2rem 1.5rem; }
+                .big-card-header h2 { color:#D4AF37; font-size:20px; font-weight:700; letter-spacing:2px; text-transform:uppercase; margin-bottom:0.5rem; }
+                .big-card-header p { color:#F4EFE6; font-size:13px; line-height:1.8; max-width:560px; }
+                .panel-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; padding:1.2rem; background:white; }
+                .scard { border-radius:12px; overflow:hidden; border:1.5px solid rgba(93,64,55,0.1); cursor:pointer; transition:all 0.3s; }
+                .scard:hover { transform:translateY(-4px); border-color:#D4AF37; box-shadow:0 8px 20px rgba(93,64,55,0.12); }
+                .scard-img { height:90px; background-size:cover; background-position:center; }
+                .scard-body { padding:8px 10px; background:white; }
+                .scard-name { font-size:12px; font-weight:700; color:#3E2723; }
+                .scard-desc { font-size:11px; color:#8D6E63; line-height:1.4; margin-top:2px; }
+                
+                .lb-wrap { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.88); z-index:99999; align-items:center; justify-content:center; }
+                .lb-wrap.open { display:flex; }
+                .lb-box { width: 80vw; max-width: 900px; }
+                .lb-box img { width: 100%; height: auto; max-height: 80vh; object-fit: contain; display: block; }
+                .lb-name { color:#F4EFE6; font-size:14px; font-weight:700; text-align:center; padding:12px; background:#111; letter-spacing:1px; }
+                .lb-close { position:absolute; top:12px; right:12px; width:36px; height:36px; background:#D4AF37; border:none; border-radius:50%; color:#3E2723; font-size:18px; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:100000; box-shadow:0 2px 8px rgba(0,0,0,0.5); }
+                </style>
+
+                <h2 style="font-size: 18px; margin: 30px 0 15px;">Recommended Styles</h2>
+                <div class="circles-row" id="circlesRow"></div>
+                <div class="big-card-wrap" id="bigCardWrap">
+                  <div class="big-card">
+                    <div class="big-card-header">
+                      <h2 id="bigCardTitle"></h2>
+                      <p id="bigCardDesc"></p>
+                    </div>
+                    <div class="panel-grid" id="panelGrid"></div>
+                  </div>
+                </div>
+
+                <script>
+                const styleData={
+                  modern:{
+                    label:"Modern",icon:"🛋",cls:"c-modern",
+                    desc:"Clean lines, open spaces, and neutral tones define the modern style. It blends function with aesthetics — sleek furniture, minimal clutter, and a refined palette that reflects contemporary living at its most elegant.",
+                    items:[
+                      {name:"Contemporary",desc:"Clean lines & neutral tones",img:"cont.jpeg"},
+                      {name:"Mid-Century Modern",desc:"Retro shapes meet modern function",img:"mid.jpeg"},
+                      {name:"Minimalist Modern",desc:"Less is more",img:"mini.jpeg"},
+                      {name:"Urban Modern",desc:"City-inspired bold details",img:"urban.jpeg"},
+                      {name:"Japandi",desc:"Japanese calm meets Scandi simplicity",img:"jap.jpeg"},
+                      {name:"Transitional",desc:"Classic & contemporary in balance",img:"tran.jpeg"},
+                      {name:"Coastal Modern",desc:"Breezy tones with natural textures",img:"co.jpeg"},
+                      {name:"Hollywood Regency",desc:"Glamour and bold contrast",img:"holly.jpeg"},
+                      {name:"New Nordic",desc:"Warm Scandi with cozy layers",img:"new.jpeg"},
+                    ]
+                  },
+                  boho:{
+                    label:"Boho",icon:"🌿",cls:"c-boho",
+                    desc:"Free-spirited and layered with texture, color, and natural elements. Boho style celebrates individuality — mixing patterns, handmade pieces, and organic materials into a warm, lived-in space that feels deeply personal.",
+                    items:[
+                      {name:"Boho Chic",desc:"Free-spirited layered textures",img:"chic.jpeg.jpeg"},
+                      {name:"Moroccan",desc:"Rich patterns & jewel tones",img:"mor.jpeg.jpeg"},
+                      {name:"Eclectic",desc:"Mix of eras and cultures",img:"ecl.jpeg.jpeg"},
+                      {name:"Wabi-Sabi",desc:"Beauty in imperfection",img:"wabi.jpeg.jpeg"},
+                      {name:"Desert Boho",desc:"Earthy terracotta vibes",img:"des.jpeg.jpeg"},
+                      {name:"Vintage Boho",desc:"Thrift charm & handmade warmth",img:"vin.jpeg.jpeg"},
+                      {name:"Nordic Boho",desc:"Hygge warmth with boho layers",img:"nor.jpeg.jpeg"},
+                      {name:"Tropical Boho",desc:"Lush greens & rattan",img:"tro.jpeg.jpeg"},
+                      {name:"Artisan Boho",desc:"Handcrafted & deeply personal",img:"art.jpeg.jpeg"},
+                    ]
+                  },
+                  industrial:{
+                    label:"Industrial",icon:"🏭",cls:"c-industrial",
+                    desc:"Exposed brick, raw steel, and open ceilings inspired by urban warehouses. Industrial style embraces unfinished surfaces and functional beauty — where concrete, metal, and wood combine into bold, honest spaces.",
+                    items:[
+                      {name:"Loft Industrial",desc:"Brick, steel & high ceilings",img:"loft.jpeg"},
+                      {name:"Raw Industrial",desc:"Exposed concrete & bold metal",img:"raw.jpeg"},
+                      {name:"Modern Industrial",desc:"Industrial bones, warm accessories",img:"modern.jpeg"},
+                      {name:"Urban Loft",desc:"Creative energy in the city",img:"ur.jpeg"},
+                      {name:"Dark Industrial",desc:"Moody tones & blackened metals",img:"dark.jpeg"},
+                      {name:"Industrial Rustic",desc:"Reclaimed wood softens metal",img:"rus.jpeg"},
+                      {name:"Brutalist",desc:"Raw concrete as bold statement",img:"brut.jpeg"},
+                      {name:"Edison Industrial",desc:"Warm bulbs & copper fixtures",img:"edison.jpeg"},
+                      {name:"Steampunk",desc:"Victorian gears & antique pipes",img:"steam.jpeg"},
+                    ]
+                  },
+                  french:{
+                    label:"French",icon:"🏛",cls:"c-french",
+                    desc:"Parisian elegance with ornate mouldings, soft grey tones, and gilded details. French style is effortlessly refined — a blend of grandeur and intimacy that turns any room into a sophisticated haven of beauty.",
+                    items:[
+                      {name:"Parisian Chic",desc:"Elegant mouldings & soft greys",img:"pari.jpeg"},
+                      {name:"French Country",desc:"Rustic Provence warmth & florals",img:"country.jpeg"},
+                      {name:"Louis XVI",desc:"Gilded ornaments & royal symmetry",img:"louis.jpeg"},
+                      {name:"French Farmhouse",desc:"Aged linen & stone floors",img:"farm.jpeg"},
+                      {name:"Haussmannian",desc:"Grand Parisian apartment aesthetic",img:"hauss.jpeg"},
+                      {name:"Art Nouveau French",desc:"Organic curves & floral motifs",img:"nou.jpeg"},
+                      {name:"Cote dAzur",desc:"Mediterranean light & pastel blues",img:"cote.jpeg"},
+                      {name:"Belle Epoque",desc:"Opulent fin-de-siecle sophistication",img:"belle.jpeg"},
+                      {name:"French Eclectic",desc:"Old-world finds with modern ease",img:"eclec.jpeg"},
+                    ]
+                  },
+                  minimalist:{
+                    label:"Minimalist",icon:"➖",cls:"c-minimalist",
+                    desc:"White space, one focal point, and absolute calm. Minimalist style strips away everything unnecessary — leaving only what truly matters. It's not about emptiness, it's about intentionality and the luxury of space.",
+                    items:[
+                      {name:"Pure Minimalist",desc:"White space & one accent",img:"pure.jpeg"},
+                      {name:"Zen Minimalist",desc:"Japanese stillness & balance",img:"zen.jpeg"},
+                      {name:"Warm Minimalist",desc:"Soft neutrals & natural materials",img:"warmy.jpeg"},
+                      {name:"Dark Minimalist",desc:"Moody black palette & sharp lines",img:"darky.jpeg"},
+                      {name:"Monochromatic",desc:"One color family, perfect layers",img:"mono.jpeg"},
+                      {name:"Functional Minimal",desc:"Every object earns its place",img:"func.jpeg"},
+                      {name:"Sculptural Minimal",desc:"Furniture as art, space as canvas",img:"sculp.jpeg"},
+                      {name:"Organic Minimal",desc:"Curved forms & earthy textures",img:"organ.jpeg"},
+                      {name:"Quiet Luxury",desc:"Understated quality, no logos",img:"quiet.jpeg"},
+                    ]
+                  },
+                  classic: {
+                    label: "Classic",
+                    icon: "✨",
+                    cls: "c-classic", 
+                    desc: "Timeless elegance rooted in symmetry, heritage, and refined grandeur. The Classic style celebrates the beauty of order — with ornate details, rich textures, and a sophisticated palette that feels both regal and enduringly homey.",
+                    items: [
+                      {name: "Baroque Elegance", desc: "Dramatically ornate and regal", img: "baroque.jpeg"},
+                      {name: "Neoclassical", desc: "Grand symmetry & Greek influence", img: "neo.jpeg"},
+                      {name: "Victorian Charm", desc: "Rich layers and antique patterns", img: "victorian.jpeg"},
+                      {name: "English Estate", desc: "Library vibes and dark woods", img: "estate.jpeg"},
+                      {name: "Gilded Luxury", desc: "Gold accents and silk textures", img: "gold.jpeg"},
+                      {name: "Colonial Classic", desc: "Stately forms and heritage colors", img: "colonial.jpeg"},
+                      {name: "Regency Style", desc: "Bold contrast and architectural grace", img: "regency.jpeg"},
+                      {name: "Art Deco Classic", desc: "Geometric glam with vintage roots", img: "deco.jpeg"},
+                      {name: "Royal Suite", desc: "Plush velvet and crown mouldings", img: "royal.jpeg"}
+                    ]
+                  },
+                };
+                
+                const row=document.getElementById('circlesRow');
+                let activeKey=null;
+                Object.entries(styleData).forEach(([key,s])=>{
+                  const item=document.createElement('div');
+                  item.className='circle-item';
+                  item.innerHTML=`<div class="circle-wrap" id="cw-${key}"><div class="circle-inner"><div class="circle-front ${s.cls}">${s.icon}</div><div class="circle-back-sm">${s.label}</div></div></div><div class="circle-label">${s.label}</div>`;
+                  item.querySelector('.circle-wrap').onclick=()=>toggleCard(key);
+                  row.appendChild(item);
+                });
+                
+                function toggleCard(key){
+                  const wrap=document.getElementById('bigCardWrap');
+                  const cw=document.getElementById('cw-'+key);
+                  if(activeKey===key){wrap.classList.remove('open');cw.classList.remove('flipped');activeKey=null;return;}
+                  if(activeKey)document.getElementById('cw-'+activeKey).classList.remove('flipped');
+                  activeKey=key;
+                  cw.classList.add('flipped');
+                  const s=styleData[key];
+                  document.getElementById('bigCardTitle').innerText=s.label;
+                  document.getElementById('bigCardDesc').innerText=s.desc;
+                  const g=document.getElementById('panelGrid');
+                  g.innerHTML=s.items.map(i=>`<div class="scard" onclick="openLb('${i.img}','${i.name}')"><div class="scard-img" style="background-image:url('${i.img}')"></div><div class="scard-body"><div class="scard-name">${i.name}</div><div class="scard-desc">${i.desc}</div></div></div>`).join('');
+                  wrap.classList.remove('open');
+                  setTimeout(()=>wrap.classList.add('open'),10);
+                }
+                
+                function openLb(src,name){document.getElementById('lbImg').src=src;document.getElementById('lbName').innerText=name;document.getElementById('lb').classList.add('open');}
+                function closeLb(){document.getElementById('lb').classList.remove('open')}
+                </script>
+
+                <h2 style="font-size: 18px; margin-bottom: 15px;">Latest Projects</h2>
+                <div class="grid-container">
+                    <?php if (count($myProjects) == 0): ?>
+                        <div class="design-card text-card" style="text-align: center; border: 2px dashed var(--accent); grid-column: 1 / -1;">
+                            <p style="margin-bottom: 10px;">No projects yet. Go to New Project if you want to make a project.</p>
+                            <button class="btn-icon" onclick="document.querySelector('[data-target=\'new-project\']').click()" style="margin: 0 auto;">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach(array_slice($myProjects, 0, 3) as $proj): ?>
+                                   <div class="design-card text-card" style="cursor:pointer;" 
+                                        onclick="openProjectAction(<?php echo $proj['id']; ?>, '<?php echo addslashes(htmlspecialchars($proj['project_name'])); ?>', '<?php echo $proj['room_type']; ?>')">
+                                          <h3 style="color: var(--primary); text-transform: capitalize;"><?php echo htmlspecialchars($proj['project_name']); ?></h3>
+                                           <p>
+                                         <i class="fa-regular fa-clock"></i> Edited: <?php echo date('M j, Y', strtotime($proj['updated_at'])); ?> <br>
+                                        <i class="fa-solid fa-couch"></i> Type: <?php echo str_replace('_', ' ', ucfirst($proj['room_type'])); ?>
+                                       </p>
+                                     </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </section>
+
+            <section class="view" id="new-project">
+                <h2>Choose a Room to Design</h2>
+                <div class="doors-container">
+                    <a href="new_project/office/office.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('office.jpeg')"></div>
+                        <div class="door-label">Office</div>
+                    </a>
+                    <a href="new_project/living_room/living_room.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800');"></div>
+                        <div class="door-label">Living Room</div>
+                    </a>
+                    <a href="new_project/bedroom/bedroom.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800');"></div>
+                        <div class="door-label">Bedroom</div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="view" id="style-quiz">
+                <div class="sq-wrap">
+
+                  <div class="sq-screen" id="sqIntro">
+                    <div class="sq-intro">
+                      <div class="sq-intro-hero">
+                        <div class="sq-hero-badge">10 Questions · 6 Styles</div>
+                        <h1 class="sq-hero-title">Discover Your<br>Interior <em>DNA</em></h1>
+                      </div>
+                      <div class="sq-intro-body">
+                        <p>Answer ten carefully crafted questions and we'll reveal the interior style that resonates with who you truly are.</p>
+                        <div class="sq-style-pills">
+                          <div class="sq-pill" style="background:#D4AF37;color:#3E2723">Modern</div>
+                          <div class="sq-pill" style="background:#5D4037;color:#F4EFE6">Bohemian</div>
+                          <div class="sq-pill" style="background:#37474F;color:#CFD8DC">Industrial</div>
+                          <div class="sq-pill" style="background:#BFA980;color:#3E2723">French Classic</div>
+                          <div class="sq-pill" style="background:#EFEBE9;color:#5D4037;border:1px solid #ddd">Minimalist</div>
+                          <div class="sq-pill" style="background:#FDFBF7; color:#5D4037; border:1px solid #D4AF37">Classic Elegance</div>
+                        </div>
+                        <button class="sq-cta" onclick="sqStart()">Begin the Journey <i class="fa-solid fa-arrow-right"></i></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="sq-screen" id="sqQuestions" style="display:none">
+                    <div class="sq-progress">
+                      <div class="sq-prog-track"><div class="sq-prog-fill" id="sqFill" style="width:10%"></div></div>
+                      <div class="sq-prog-meta">
+                        <div class="sq-prog-step" id="sqStep">Question 1 of 10</div>
+                        <div class="sq-prog-dots" id="sqDots"></div>
+                      </div>
+                    </div>
+                    <div class="sq-qcard">
+                      <div class="sq-q-eyebrow" id="sqEyebrow">Question 01</div>
+                      <h2 class="sq-q-text" id="sqQText"></h2>
+                      <div class="sq-options" id="sqOptions"></div>
+                      <div class="sq-next-wrap">
+                        <button class="sq-next" id="sqNext" onclick="sqNext()">
+                          Continue <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="sq-screen" id="sqResult" style="display:none">
+                    <div class="sq-result-header">
+                      <div class="sq-result-eyebrow">Your Interior DNA is</div>
+                      <div class="sq-result-name" id="sqResultName"></div>
+                    </div>
+                    <div class="sq-flip-outer">
+                      <div class="sq-flip-card">
+                        <div class="sq-flip-front">
+                          <img id="sqResultImg" src="" alt="" class="sq-flip-img">
+                          <div class="sq-flip-overlay"></div>
+                          <div class="sq-flip-front-footer">
+                            <div class="sq-flip-style-label" id="sqFlipLabel"></div>
+                            <div class="sq-flip-hint">Hover to reveal ✦</div>
+                          </div>
+                        </div>
+                        <div class="sq-flip-back">
+                          <div class="sq-back-content">
+                            <div class="sq-back-name" id="sqBackName"></div>
+                            <div class="sq-back-tagline" id="sqBackTagline"></div>
+                            <div class="sq-palette-label">Signature Palette</div>
+                            <div class="sq-palette" id="sqPalette"></div>
+                            <div class="sq-keywords" id="sqKeywords"></div>
+                            <div class="sq-materials-back" id="sqMaterials"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="sq-desc-box">
+                      <div class="sq-desc-icon"><i class="fa-solid fa-quote-left"></i></div>
+                      <p class="sq-desc-text" id="sqDesc"></p>
+                    </div>
+                    <div class="sq-retake-wrap">
+                      <button class="sq-retake" onclick="sqReset()"><i class="fa-solid fa-rotate-left"></i> Retake Quiz</button>
+                    </div>
+                  </div>
+                </div>
+            </section>
+
+            <section class="view" id="furniture-hub">
+                <div class="header-flex">
+                    <h1 style="font-size: 32px;">Furniture Hub</h1>
+                </div>
+                <p style="color: var(--text-sec); margin-bottom: 30px;">Explore premium furniture pieces from world-renowned brands.</p>
+
+                <div class="grid-container">
+                    <a href="https://hubfurniture.com.eg" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #000; display: flex; align-items: center; justify-content: center;">
+                                <span style="color: #fff; font-weight: bold; font-size: 24px; letter-spacing: 2px;">HUB</span>
+                            </div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Hub Furniture</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Premium furniture collections and home accessories in Egypt.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.ikea.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background-image: url('https://www.ikea.com/images/ikea-logo-7e04040a32490800b466248b11568285.jpg'); background-size: contain; background-repeat: no-repeat;"></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">IKEA</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Modern home furniture and smart living solutions.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.ashleyfurniture.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #e1e1e1; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-couch" style="font-size: 40px; color: var(--primary);"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Ashley Furniture</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">World's #1 furniture manufacturer and retailer.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.wayfair.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #7b1fa2; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-house-chimney" style="font-size: 40px; color: white;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Wayfair</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Everything home, for every budget and style.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.westelm.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #fdf5e6; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-chair" style="font-size: 40px; color: #a67c52;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">West Elm</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Modern, sustainable designs for contemporary living.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.potterybarn.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #f5f5f5; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-bed" style="font-size: 40px; color: #4e342e;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Pottery Barn</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Expertly crafted home furnishings and classic decor.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.crateandbarrel.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #000; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-lightbulb" style="font-size: 40px; color: white;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Crate & Barrel</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Modern furniture, housewares, and wedding registry.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://rh.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #222; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-gem" style="font-size: 40px; color: #d4af37;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">RH</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Luxury home furnishings, lighting, and textiles.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.homecentre.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #fff; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-house" style="font-size: 40px; color: #ec407a;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Home Centre</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Middle East's leading retailer for furniture and home decor.</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="https://www.maisonsdumonde.com" target="_blank" style="text-decoration: none;">
+                        <div class="design-card">
+                            <div class="card-img" style="background: #e8f5e9; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-leaf" style="font-size: 40px; color: #2e7d32;"></i></div>
+                            <div class="card-body">
+                                <h3 style="color: var(--primary);">Maisons du Monde</h3>
+                                <p style="font-size: 13px; color: var(--text-sec);">Unique furniture and decoration with a global touch.</p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </section>
+
+            <section class="view" id="my-designs">
+                <h2>My Projects Library</h2>
+                <div class="grid-container" style="margin-top: 20px;">
+                    <?php if (count($myProjects) == 0): ?>
+                        <div class="design-card text-card" onclick="document.querySelector('[data-target=\'new-project\']').click()" style="text-align: center; cursor: pointer;">
+                            <h3 style="color: var(--accent); font-size: 24px;"><i class="fa-solid fa-plus-circle"></i></h3>
+                            <h3>Start Your First Project</h3>
+                            <p>Click here to begin your design journey.</p>
+                        </div>
+                    <?php else: ?>
+                        <?php foreach($myProjects as $proj): ?>
+                         <div class="design-card text-card" style="border-left: 5px solid var(--primary); cursor:pointer;" 
+                           onclick="openProjectAction(<?php echo $proj['id']; ?>, '<?php echo addslashes(htmlspecialchars($proj['project_name'])); ?>', '<?php echo $proj['room_type']; ?>')">
+                           <h3 style="margin-bottom: 8px; font-size: 18px; color: var(--primary);"><?php echo htmlspecialchars($proj['project_name']); ?></h3>
+                            <p style="font-size: 13px; color: var(--text-sec); font-weight: 600;">
+                             <span style="color: var(--accent);"><?php echo str_replace('_', ' ', ucfirst($proj['room_type'])); ?></span> • 
+                               Last edited: <?php echo date('d M Y, h:i A', strtotime($proj['updated_at'])); ?>
+                              </p>
+                            <p style="font-size: 12px; margin-top: 5px; opacity: 0.8;"><?php echo htmlspecialchars($proj['description']); ?></p>
+                          </div>
+                     <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+            </section>
+
+            <section class="view" id="profile">
+                <div class="glass-card">
+                    <div class="profile-header">
+                        <img src="https://ui-avatars.com/api/?name=Youssef+Gaser&background=5d4037&color=fff" class="profile-img">
+                        <div>
+                            <h2 style="font-size: 28px;"><?php echo htmlspecialchars($_SESSION['user_name']); ?></h2>
+                            <p style="color: var(--accent); font-weight: 700; letter-spacing: 1px;">PREMIUM ARCHITECT</p>
+                        </div>
+                    </div>
+                    <div class="profile-stat-grid">
+                        <div class="stat-item"><strong><?php echo $projectCount; ?></strong><span>Projects</span></div>
+                        <div class="stat-item"><strong><?php echo empty($user['preferred_style']) ? 'Not Set' : htmlspecialchars($user['preferred_style']); ?></strong><span>Pref. Style</span></div>
+                        <div class="stat-item"><strong><?php echo $age; ?></strong><span>Age</span></div>
+                    </div>
+                    <div style="margin-top: 30px;">
+                        <div class="settings-row"><strong>Specialty</strong> <span>3D Walkthroughs</span></div>
+                        <div class="settings-row"><strong>Member Since</strong> <span><?php echo date('M Y', strtotime($user['created_at'])); ?></span></div>
+                        <div class="settings-row"><strong>Year of Birth</strong> <span><?php echo $birthYear; ?></span></div>
+                        <div class="settings-row"><strong>Email</strong> <span><?php echo htmlspecialchars($user['email']); ?></span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="settings">
+                <h2 style="margin-bottom: 30px;">Studio Settings</h2>
+                <div class="glass-card">
+                    <div class="settings-section">
+                        <h3>General Appearance</h3>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Dark Mode</strong><span>Switch theme</span></div>
+                            <label class="switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Measurement Units</strong><span>Metric or Imperial</span></div>
+                            <select><option>Metric (Meters)</option><option>Imperial (Feet)</option></select>
+                        </div>
+                    </div>
+                    <div class="settings-section" style="margin-top: 40px;">
+                        <h3>Design Preferences</h3>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Default Room Style</strong><span>Pre-load assets</span></div>
+                            <select><option>Modern</option><option>Bohemian</option><option>Industrial</option></select>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Studio Language</strong><span>Change UI language</span></div>
+                            <select><option>English (US)</option><option>Arabic (العربية)</option></select>
+                        </div>
+                    </div>
+                    <button class="btn-action" style="width: 100%; margin-top: 30px;">Apply All Changes</button>
+                </div>
+            </section>
+
+             <footer style="text-align: center; padding: 20px; font-size: 14px;">
+             <p>Copyright &copy; <span class="year"></span> [Smart Space Designer]. All Rights Reserved.</p>
+             </footer>
+
+        </main>
+    </div>
+
+    <script>
+        // Hna byshta8al 3la t8yer el saf7at lma ydous fel menu (sidebar)
+        const navItems = document.querySelectorAll('.nav-item[data-target]');
+        const views = document.querySelectorAll('.view');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const target = item.getAttribute('data-target');
+                views.forEach(v => {
+                    v.classList.remove('active');
+                    if(v.id === target) v.classList.add('active');
+                });
+            });
+        });
+
+        // Dark Mode Logic (T8yeer el lon 8ame2)
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if(localStorage.getItem('ssd_theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            darkModeToggle.checked = true;
+        }
+        darkModeToggle.addEventListener('change', () => {
+            if(darkModeToggle.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('ssd_theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('ssd_theme', 'light');
+            }
+        });
+
+        // Parallax Effect: By7rak el khalfya m3 7arket el mouse 3shan ydy shape 3D
+        document.onmousemove = (e) => {
+            const bg = document.getElementById('parallaxBg');
+            bg.style.transform = `translate(${(innerWidth/2 - e.pageX)/80}px, ${(innerHeight/2 - e.pageY)/80}px) scale(1.1)`;
+        };
+        
+        // ===================== STYLE QUIZ LOGIC =====================
+        // Array feha kol as2ela el emte7an bta3 el style
+        const sqQuestions = [
+        { q:"You walk into a room — what instantly draws your attention?", opts:[
+            {icon:"🪟",text:"Floods of natural light and open, breathing space",scores:{modern:2,minimalist:2}},
+            {icon:"🎨",text:"Rich, layered colors and patterns on every surface",scores:{boho:2,french:1}},
+            {icon:"🧱",text:"Raw exposed brick or rough concrete walls",scores:{industrial:3}},
+            {icon:"✨",text:"Ornate details — gilded frames and carved mouldings",scores:{french:3, classic:2}},
+            {icon:"🌿",text:"Lush greenery, organic shapes and natural textures",scores:{boho:2,minimalist:1}},
+        ]},
+        { q:"Which color palette speaks to your soul?", opts:[
+            {icon:"🤍",text:"Pure whites, soft creams and warm greys",scores:{minimalist:3}},
+            {icon:"🟤",text:"Terracotta, rust, warm amber and dusty sage",scores:{boho:3}},
+            {icon:"🩶",text:"Deep charcoal, slate grey and blackened steel",scores:{industrial:3}},
+            {icon:"🥂",text:"Blush, ivory, dusty rose and antique gold",scores:{french:3, classic:2}},
+            {icon:"🌲",text:"Natural oak, warm beige and muted olive",scores:{modern:2,minimalist:1}},
+        ]},
+        { q:"Your ideal sofa looks like:", opts:[
+            {icon:"🛋️",text:"Low-profile, clean-lined — functional and sleek",scores:{modern:2,minimalist:2}},
+            {icon:"🪑",text:"Overstuffed and covered in throws, cushions and texture",scores:{boho:3}},
+            {icon:"⚙️",text:"Dark leather with exposed metal legs — bold and raw",scores:{industrial:3}},
+            {icon:"🏛️",text:"Curved camelback velvet with carved gilded feet",scores:{french:3, classic:2}},
+            {icon:"🪨",text:"Simple linen or bouclé — tactile and understated",scores:{minimalist:2,modern:1}},
+        ]},
+        { q:"How do you feel about decorative objects?", opts:[
+            {icon:"❌",text:"Nothing unnecessary — surfaces must stay completely clear",scores:{minimalist:3}},
+            {icon:"🕯️",text:"One or two carefully chosen statement pieces, nothing more",scores:{modern:3}},
+            {icon:"🖼️",text:"Gallery walls, layered prints and framed art everywhere",scores:{french:2,boho:1,classic:2}},
+            {icon:"🌺",text:"More is more — plants, ceramics, rugs, throws everywhere",scores:{boho:3}},
+            {icon:"🔩",text:"Functional objects are the decoration — nothing purely decorative",scores:{industrial:3}},
+        ]},
+        { q:"Your dream ceiling looks like:", opts:[
+            {icon:"⬜",text:"Flat pure white — clean and utterly distraction-free",scores:{minimalist:3}},
+            {icon:"🏚️",text:"Exposed pipes, ductwork and raw structural beams",scores:{industrial:3}},
+            {icon:"💫",text:"Ornate plaster mouldings and a crystal chandelier and classical",scores:{french:3, classic:2}},
+            {icon:"🪵",text:"Warm wooden beams or a beautiful vaulted arch",scores:{boho:2,modern:1}},
+            {icon:"🌑",text:"Painted deep black — moody, dramatic and bold",scores:{industrial:2,modern:1}},
+        ]},
+        { q:"Pick your ideal flooring:", opts:[
+            {icon:"🪵",text:"Pale wide-plank oak — minimal, warm and timeless",scores:{modern:2,minimalist:2}},
+            {icon:"🏺",text:"Hand-painted Zellige tiles or terracotta",scores:{boho:3}},
+            {icon:"🧱",text:"Polished concrete — raw, seamless and uncompromising",scores:{industrial:3}},
+            {icon:"🌹",text:"Ornate herringbone parquet — grand and classical",scores:{french:3, classic:2}},
+            {icon:"🪨",text:"Honed travertine or marble — quiet, understated luxury",scores:{minimalist:2,french:1}},
+        ]},
+        { q:"The lighting in your space must be:", opts:[
+            {icon:"💡",text:"Warm Edison bulbs — intimate, moody and golden and Luxurious",scores:{industrial:2,boho:1, classic:2}},
+            {icon:"🕯️",text:"Crystal chandeliers, candles and ornate wall sconces",scores:{french:3}},
+            {icon:"☀️",text:"Bright and completely natural — floor-to-ceiling windows",scores:{minimalist:2,modern:1}},
+            {icon:"🌙",text:"Layered — floor lamps, pendants, candles and strips",scores:{boho:2,modern:1}},
+            {icon:"🔦",text:"Track lighting and industrial pipe fixtures",scores:{industrial:3}},
+        ]},
+        { q:"One word that perfectly describes your dream home:", opts:[
+            {icon:"🧘",text:"Serene — a space where I can truly, deeply exhale",scores:{minimalist:3}},
+            {icon:"🔥",text:"Soulful — layered with stories, warmth and memories",scores:{boho:3}},
+            {icon:"👑",text:"Grand — a space that commands presence and awe",scores:{french:3}},
+            {icon:"⚡",text:"Edgy — raw, unapologetic and completely unforgettable",scores:{industrial:3}},
+            {icon:"✦",text:"Refined — quietly sophisticated, never loud or obvious",scores:{modern:3, classic:2}},
+        ]},
+        { q:"Your walls are:", opts:[
+            {icon:"🤍",text:"Stark white — nothing to distract or compete with space",scores:{minimalist:3, classic:2}},
+            {icon:"🎭",text:"Covered in tapestries, woven art and layered prints",scores:{boho:3}},
+            {icon:"🧱",text:"Raw exposed brick or rough, unfinished concrete",scores:{industrial:3}},
+            {icon:"💚",text:"Painted deep forest green or dusty Parisian blue",scores:{french:2,modern:1}},
+            {icon:"🎨",text:"Warm limewash or textured Venetian plaster",scores:{boho:1,french:2}},
+        ]},
+        { q:"Your ideal Saturday morning at home looks like:", opts:[
+            {icon:"📖",text:"Reading in a sun-drenched, perfectly minimal corner",scores:{minimalist:2,modern:1}},
+            {icon:"🕯️",text:"Espresso under a gilded mirror, wearing silk — très chic",scores:{french:3, classic:2}},
+            {icon:"🌿",text:"Surrounded by plants, incense and warm woven blankets",scores:{boho:3}},
+            {icon:"🎵",text:"Vinyl record echoing through a raw, dramatic loft space",scores:{industrial:3}},
+            {icon:"☕",text:"Clean desk, clear surfaces, open windows — total clarity",scores:{modern:2,minimalist:1}},
+        ]},
+        ];
+
+        // Kol el byanat w el natija bta3et el styles elly htzhar fel akher 
+        const sqStyles = {
+        modern:{ name:"Modern", tagline:"Refined · Functional · Timeless",
+            img:"Modern.jpeg",
+            colors:["#E8E0D5","#C4B5A0","#5D4037","#D4AF37","#37474F"],
+            keywords:["Clean Lines","Functional","Refined","Open Space","Sleek"],
+            materials:"Glass · Brushed Steel · Light Oak · Polished Concrete",
+            desc:"You are drawn to spaces where every element earns its place. Clean geometry, restrained palettes, and the beauty of negative space define your world. Your home is a curated reflection of refined taste — effortlessly sophisticated without ever trying too hard."
+        },
+        minimalist:{ name:"Minimalist", tagline:"Intentional · Serene · Pure",
+            img:"minimalist.jpeg",
+            colors:["#FFFFFF","#F5F5F0","#E0DDD8","#9E9E9E","#212121"],
+            keywords:["Intentional","Serene","Pure","Still","Quiet Luxury"],
+            materials:"White Plaster · Honed Concrete · Raw Linen · Natural Stone",
+            desc:"You believe a room should breathe. Every object earns its place — nothing exists without purpose. You find deep comfort in stillness, in rooms that feel like a long, slow exhale. Your style is the true and ultimate luxury of less."
+        },
+        boho:{ name:"Bohemian", tagline:"Free-Spirited · Warm · Soulful",
+            img: "boho.jpeg",
+            colors:["#C0622A","#8D4A2A","#D4AF37","#6D4C41","#A5C4A0"],
+            keywords:["Free-Spirited","Layered","Warm","Eclectic","Soulful"],
+            materials:"Rattan · Macramé · Terracotta · Jute · Handwoven Textiles",
+            desc:"Your home is a living journal — every piece has a story, a journey, a memory. You layer textures, patterns, and cultures into a space that feels deeply personal and endlessly warm. Rules were made for someone else's living room."
+        },
+        french:{ name:"French Classic", tagline:"Elegant · Grand · Timeless",
+            img:"french.jpeg",
+            colors:["#BFA980","#D4AF37","#8C7B6B","#EDE0D0","#4A3728"],
+            keywords:["Elegant","Ornate","Grand","Timeless","Refined"],
+            materials:"Gilded Wood · Velvet · Carrara Marble · Plaster Mouldings",
+            desc:"You have an eye for grandeur — the curve of a Louis chair, the shimmer of a chandelier, the weight of a gilded frame. Your space is a love letter to old-world elegance, where beauty is never accidental and every detail tells of a life beautifully and deliberately lived."
+        },
+        industrial:{ name:"Industrial", tagline:"Raw · Bold · Unapologetic",
+            img:"industirial.jpeg",
+            colors:["#37474F","#263238","#78909C","#8D6E63","#D4AF37"],
+            keywords:["Raw","Bold","Edgy","Authentic","Urban"],
+            materials:"Blackened Steel · Raw Concrete · Reclaimed Wood · Exposed Brick",
+            desc:"You appreciate honesty in design — materials left raw, structures left visible, beauty found in pure function. Your space has the energy of a converted warehouse: dramatic, unapologetic, and completely unforgettable. You don't decorate. You inhabit."
+        },
+        classic: { 
+            name: "Classic Elegance", 
+            tagline: "Timeless · Symmetrical · Regal",
+            img: "classic.jpg", 
+            colors: ["#5d4037", "#d4af37", "#f5f5dc", "#2c3e50", "#ffffff"],
+            keywords: ["Symmetrical", "Formal", "Sophisticated", "Heritage", "Luxurious", "classical"],
+            materials: "Polished Marble · Velvet · Mahogany Wood · Crystal · Silk Wallpapers",
+            desc: "Your style is rooted in the grand traditions of European nobility. You value symmetry, balance, and a sense of history in every corner. For you, a home isn't just a place to live; it's a curated gallery of timeless elegance and refined architectural order."
+        }
+        };
+
+        let sqCurrent = 0;
+        let sqScores = {modern:0,minimalist:0,boho:0,french:0,industrial:0,classic:0};
+        let sqAnswered = false;
+
+        function sqStart() {
+        document.getElementById('sqIntro').style.display = 'none';
+        document.getElementById('sqQuestions').style.display = 'block';
+        sqBuildDots();
+        sqShowQ();
+        }
+
+        function sqBuildDots() {
+        const dots = document.getElementById('sqDots');
+        dots.innerHTML = sqQuestions.map((_,i) => `<div class="sq-dot" id="dot-${i}"></div>`).join('');
+        }
+
+        function sqShowQ() {
+        sqAnswered = false;
+        const next = document.getElementById('sqNext');
+        next.style.display = 'none';
+        const q = sqQuestions[sqCurrent];
+        document.getElementById('sqEyebrow').innerText = `Question ${String(sqCurrent+1).padStart(2,'0')}`;
+        document.getElementById('sqQText').innerText = q.q;
+        document.getElementById('sqStep').innerText = `Question ${sqCurrent+1} of 10`;
+        document.getElementById('sqFill').style.width = `${((sqCurrent+1)/10)*100}%`;
+
+        for(let i=0;i<10;i++) {
+            const d = document.getElementById('dot-'+i);
+            if(!d) continue;
+            d.className = 'sq-dot' + (i < sqCurrent ? ' done' : i === sqCurrent ? ' active' : '');
+        }
+
+        const el = document.getElementById('sqOptions');
+        el.innerHTML = '';
+        q.opts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'sq-option';
+            btn.innerHTML = `<span class="sq-opt-icon">${opt.icon}</span><span class="sq-opt-text">${opt.text}</span><span class="sq-opt-check"><i class="fa-solid fa-check" style="display:none"></i></span>`;
+            btn.onclick = () => sqSelect(btn, opt.scores);
+            el.appendChild(btn);
+        });
+        }
+
+        function sqSelect(btn, optScores) {
+        if(sqAnswered) return;
+        sqAnswered = true;
+        document.querySelectorAll('.sq-option').forEach(b => {
+            b.classList.remove('selected');
+            b.querySelector('.fa-check').style.display = 'none';
+        });
+        btn.classList.add('selected');
+        btn.querySelector('.fa-check').style.display = 'block';
+        Object.entries(optScores).forEach(([s,v]) => { sqScores[s] += v; });
+        const next = document.getElementById('sqNext');
+        next.style.display = 'flex';
+        }
+
+        function sqNext() {
+        sqCurrent++;
+        if(sqCurrent >= sqQuestions.length) { sqShowResult(); }
+        else { sqShowQ(); }
+        }
+
+        // Lma yekhlas byzher el natija bta3t aktar score w y7fzha fel db
+        function sqShowResult() {
+        document.getElementById('sqQuestions').style.display = 'none';
+        document.getElementById('sqResult').style.display = 'block';
+        const top = Object.entries(sqScores).sort((a,b) => b[1]-a[1])[0][0];
+        const r = sqStyles[top];
+        
+        document.getElementById('sqResultName').innerText = r.name;
+        document.getElementById('sqResultImg').src = r.img;
+        document.getElementById('sqFlipLabel').innerText = r.name;
+        document.getElementById('sqBackName').innerText = r.name;
+        document.getElementById('sqBackTagline').innerText = r.tagline;
+        document.getElementById('sqDesc').innerText = r.desc;
+        document.getElementById('sqMaterials').innerText = r.materials;
+        document.getElementById('sqPalette').innerHTML = r.colors.map(c => `<div class="sq-swatch" style="background:${c}" title="${c}"></div>`).join('');
+        document.getElementById('sqKeywords').innerHTML = r.keywords.map(k => `<span class="sq-keyword">${k}</span>`).join('');
+
+        // ========= التعديل الجديد: إرسال النتيجة للداتا بيز =========
+        const formData = new FormData();
+        formData.append('style', r.name); 
+
+        fetch('../login/save_quiz.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            if(data.trim() === "success") {
+                console.log("Style saved to Database successfully!");
+            } else {
+                console.error("Error saving style: ", data);
+            }
+        });
+        }
+
+        function sqReset() {
+        sqCurrent = 0;
+        sqScores = {modern:0,minimalist:0,boho:0,french:0,industrial:0,classic:0};
+        sqAnswered = false;
+        document.getElementById('sqResult').style.display = 'none';
+        document.getElementById('sqIntro').style.display = 'block';
+        }
+
+
+        // By5ali el Sidebar t-esht8al w t-2alib lma tdous 3liha tany
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+
+                this.classList.add('active');
+                const targetId = this.getAttribute('data-target');
+                const targetView = document.getElementById(targetId);
+                
+                if (targetView) {
+                    targetView.classList.add('active');
+                }
+            });
+        });
+
+        // Updates el sana el mwgoda ta7t fel footer bta3t el 7o2o2
+        const years = document.querySelectorAll('.year');
+        years.forEach(el => el.textContent = new Date().getFullYear());
+
+    </script>
+    
+    <div class="lb-wrap" id="lb">
+        <div class="lb-box">
+            <button class="lb-close" onclick="closeLb()">×</button>
+            <img id="lbImg" src="" alt="">
+            <div class="lb-name" id="lbName"></div>
+        </div>
+    </div>
+    <div id="project-action-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:999999; align-items:center; justify-content:center;">
+        <div style="background:var(--bg-card); padding:40px; border-radius:20px; text-align:center; max-width:400px; border-top:5px solid var(--primary);">
+            <h2 id="action-modal-title" style="color:var(--primary); margin-bottom:10px;">Project Options</h2>
+            <p style="color:var(--text-sec); margin-bottom:30px; font-size:15px;">What would you like to do with this project?</p>
+            
+            <div style="display:flex; flex-direction:column; gap:15px;">
+                <button id="btn-edit-proj" style="background:var(--accent); color:#fff; padding:15px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; font-size:15px;"><i class="fa-solid fa-pen-to-square"></i> Open & Edit</button>
+                <button id="btn-delete-proj" style="background:#dc3545; color:#fff; padding:15px; border:none; border-radius:10px; cursor:pointer; font-weight:bold; font-size:15px;"><i class="fa-solid fa-trash"></i> Delete Project</button>
+                <button onclick="document.getElementById('project-action-modal').style.display='none'" style="background:transparent; color:var(--text-sec); padding:10px; border:none; cursor:pointer; font-weight:bold; margin-top:10px;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openProjectAction(id, name, type) {
+    document.getElementById('action-modal-title').innerText = name;
+    document.getElementById('project-action-modal').style.display = 'flex';
+    
+    // التعديل هنا: لازم نبعت الـ ID للأوضة في اللينك
+    document.getElementById('btn-edit-proj').onclick = function() {
+        // بنروح للأوضة وبنقولها: "يا أوضة خدي الـ ID رقم كذا معاكي"
+        window.location.href = `new_project/${type}/${type}.html?proj_id=${id}`;
+    };
+
+    // كود الديليت اللي شغال معاك زي الفل
+    document.getElementById('btn-delete-proj').onclick = function() {
+        if(confirm("Are you sure you want to delete this project?")) {
+            fetch(`../delete_project.php?id=${id}`)
+            .then(response => response.text())
+            .then(data => {
+                if(data.trim() === "success") {
+                    alert("✅ Project Deleted!");
+                    window.location.reload(); 
+                }
+            });
+        }
+    };
+}
+    </script>
+</body>
+
+</html>

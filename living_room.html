@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Living Room Editor - 3D Walkthrough</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="living_room.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div id="intro-flash">LIVING ROOM</div>
+    
+    <div id="crosshair" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.5); font-size: 24px; z-index: 10;">+</div>
+
+    <div id="blocker">
+        <div id="instructions">
+            <span style="font-size:36px; font-weight: bold; color: #d4af37;">Click to Enter the Room</span><br/>
+            <br/>Move: W, A, S, D<br/>Look: Mouse<br/>Exit: ESC
+        </div>
+    </div>
+
+    <div id="ui-panel">
+        <h3>Room Settings</h3>
+        
+        <div class="control-group">
+            <label>Width: <span id="width-val">4</span>m</label>
+            <input type="range" id="width-slider" min="3" max="10" value="4" step="0.5">
+        </div>
+        <div class="control-group">
+            <label>Length: <span id="length-val">4</span>m</label>
+            <input type="range" id="length-slider" min="3" max="10" value="4" step="0.5">
+        </div>
+        
+        <div class="control-group">
+            <label>Wall Color</label>
+            <input type="color" id="wall-color" value="#eae6df" class="color-picker">
+        </div>
+        <div class="control-group">
+            <label>Floor Color</label>
+            <input type="color" id="floor-color" value="#d2b48c" class="color-picker">
+        </div>
+
+        <div class="control-group">
+            <label>Add Furniture</label>
+            <select id="model-selector" style="width: 100%; padding: 5px; margin-bottom: 10px; background: #1a2639; color: white; border: 1px solid #d4af37; border-radius: 5px;">
+                <optgroup label="Simple Chairs">
+                    <option value="../models/living_room/simple_room/simple_chairs_room/chair.glb">Basic Chair</option>
+                    <option value="../models/living_room/simple_room/simple_chairs_room/conference_chair.glb">Conference Chair</option>
+                    <option value="../models/living_room/simple_room/simple_chairs_room/old_metal_chair.glb">Old Metal Chair</option>
+                    <option value="../models/living_room/simple_room/simple_chairs_room/plastic_monobloc_chair.glb">Plastic Chair</option>
+                    <option value="../models/living_room/simple_room/simple_chairs_room/simple_kitchen_chair_lowoply.glb">Kitchen Chair</option>
+                </optgroup>
+                <optgroup label="Simple Sofas">
+                    <option value="../models/living_room/simple_room/simple_sofa/chesterfield-sofa.glb">Chesterfield Sofa</option>
+                    <option value="../models/living_room/simple_room/simple_sofa/old_sofa.glb">Old Sofa</option>
+                    <option value="../models/living_room/simple_room/simple_sofa/sofa_free.glb">Free Sofa</option>
+                </optgroup>
+                <optgroup label="Simple Tables">
+                    <option value="../models/living_room/simple_room/simple_table_room/classic_table.glb">Classic Table</option>
+                    <option value="../models/living_room/simple_room/simple_table_room/coffee_table.glb">Coffee Table</option>
+                    <option value="../models/living_room/simple_room/simple_table_room/table.glb">Basic Table</option>
+                </optgroup>
+                
+                <optgroup label="Modern Chairs">
+                    <option value="../models/living_room/modern_room/modern_chairs/chair__futuristic_chair.glb">Futuristic Chair</option>
+                    <option value="../models/living_room/modern_room/modern_chairs/dining_armchair_-_chair.glb">Dining Armchair</option>
+                    <option value="../models/living_room/modern_room/modern_chairs/generic_modern_chair.glb">Generic Modern Chair</option>
+                    <option value="../models/living_room/modern_room/modern_chairs/modern_chair (3).glb">Modern Chair (Alt)</option>
+                    <option value="../models/living_room/modern_room/modern_chairs/modern_chair.glb">Modern Chair</option>
+                    <option value="../models/living_room/modern_room/modern_chairs/modern_chair_3d_model.glb">Modern Chair 3D</option>
+                    <option value="../models/living_room/modern_room/modern_chairs/office_chairs_modern.glb">Office Modern Chair</option>
+                </optgroup>
+                <optgroup label="Modern Sofas">
+                    <option value="../models/living_room/modern_room/modern_sofa/couch__sofa.glb">Couch Sofa</option>
+                    <option value="../models/living_room/modern_room/modern_sofa/leather_3_person_modern_couch.glb">Leather Modern Couch</option>
+                    <option value="../models/living_room/modern_room/modern_sofa/low_poly_modern_sofa_free_model.glb">Low Poly Sofa</option>
+                    <option value="../models/living_room/modern_room/modern_sofa/mid_century_modern_sofa.glb">Mid Century Sofa</option>
+                    <option value="../models/living_room/modern_room/modern_sofa/modern__sofa.glb">Modern Sofa</option>
+                </optgroup>
+                <optgroup label="Modern Tables">
+                    <option value="../models/living_room/modern_room/moderrn_table/lounge_furniture.glb">Lounge Furniture</option>
+                    <option value="../models/living_room/modern_room/moderrn_table/modern_coffee_table_-_asset.glb">Modern Coffee Table</option>
+                    <option value="../models/living_room/modern_room/moderrn_table/modern_table.glb">Modern Table</option>
+                    <option value="../models/living_room/modern_room/moderrn_table/modern_table_with_steel_and_carrara_...glb">Steel/Carrara Table</option>
+                    <option value="../models/living_room/modern_room/moderrn_table/simple_modern_table.glb">Simple Modern Table</option>
+                    <option value="../models/living_room/modern_room/moderrn_table/simple_office_table.glb">Simple Office Table</option>
+                </optgroup>
+                <optgroup label="Wall Paintings & Decor">
+                    <option value="../models/wall_paint/abstract_wall_art_set__game-ready_3d_models.glb">Abstract Wall Art</option>
+                    <option value="../models/wall_paint/american_horror_wall_picture.glb">American Horror Picture</option>
+                    <option value="../models/wall_paint/day_261_metal_sun_wall_art_-_1scanaday.glb">Metal Sun Wall Art</option>
+                    <option value="../models/wall_paint/fnaf_wall_sun.glb">FNAF Wall Sun</option>
+                    <option value="../models/wall_paint/wall_art.glb">Wall Art</option>
+                    <option value="../models/wall_paint/wall_art_of_flowers_in_pot.glb">Flowers in Pot Art</option>
+                </optgroup>
+            </select>
+            <button id="add-model-btn" style="width: 100%; padding: 8px; background: #3E2723; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Add to Room</button>
+            <button id="delete-selected-btn" style="width: 100%; padding: 8px; background: #c0392b; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px;">Delete Selected</button>
+        </div>
+
+        <button id="drag-mode-btn" style="width: 100%; padding: 8px; background: #563e3a67; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px;">Enable Edit Mode</button>
+        
+        <div id="edit-tools" style="display: none; margin-top: 10px; text-align: center; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+            <p style="font-size: 12px; margin-bottom: 5px; color: white;">Position: <span id="pos-display">X:0, Y:0, Z:0</span></p>
+            <button id="tool-move" style="padding: 5px; background: #d4af37; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Move</button>
+            <button id="tool-lift" style="padding: 5px; background: #fff; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Lift</button>
+            <button id="tool-rotate" style="padding: 5px; background: #fff; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Rotate</button>
+            <button id="tool-scale" style="padding: 5px; background: #fff; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Scale (Size)</button>
+        </div>
+
+        <div class="control-group" style="margin-top: 15px;">
+            <label>Ceiling Light</label>
+            <div class="color-buttons">
+                <button class="light-btn" data-color="0xffffff" style="background: #ffffff;"></button>
+                <button class="light-btn" data-color="0xffd6aa" style="background: #ffd6aa;"></button>
+                <button class="light-btn" data-color="0xffe4ce" style="background: #ffe4ce;"></button>
+                <button class="light-btn" data-color="0x88ccff" style="background: #88ccff;"></button>
+            </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+    
+    <button id="save-project-btn" style="width: 100%; padding: 12px; background-color: #3E2723; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;">
+        💾 Save Project
+    </button>
+    
+    <button id="exit-editor-btn" style="width: 100%; padding: 12px; background-color: brown; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.3s;">
+        Exit Editor
+    </button>
+
+</div>
+    </div>
+
+    <div id="save-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 style="color: #d4af37; margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">Save Living Room</h2>
+            
+            <label>Project Name *</label>
+            <input type="text" id="project-name" placeholder="E.g., Cozy Living Space" required>
+            
+            <label>Description (Optional)</label>
+            <textarea id="project-desc" placeholder="Notes about this design..." rows="3"></textarea>
+            
+            <div class="modal-buttons">
+                <button id="confirm-save-btn" class="save-btn">Save to DB</button>
+                <button id="cancel-save-btn" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="canvas-container"></div>
+    <script src="living_room.js"></script>
+</body>
+</html>

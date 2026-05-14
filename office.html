@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Office Editor - 3D Walkthrough</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="office.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/PointerLockControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+</head>
+<body>
+    <div id="intro-flash">OFFICE STUDIO</div>
+    
+    <div id="crosshair" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: rgba(255,255,255,0.5); font-size: 24px; z-index: 10;">+</div>
+    
+    <div id="blocker">
+        <div id="instructions">
+            <span style="font-size:36px; font-weight: bold; color: #d4af37;">Click to Enter the Office</span><br/><br/>
+            Move: W, A, S, D<br/>Look: Mouse<br/>Exit: ESC
+        </div>
+    </div>
+    
+    <div id="ui-panel">
+        <h3>Room Settings</h3>
+        <div class="control-group"><label>Width: <span id="width-val">4</span>m</label><input type="range" id="width-slider" min="3" max="10" value="4" step="0.5"></div>
+        <div class="control-group"><label>Length: <span id="length-val">4</span>m</label><input type="range" id="length-slider" min="3" max="10" value="4" step="0.5"></div>
+        
+        <div class="control-group"><label>Wall Color</label><input type="color" id="wall-color" value="#2c3e50" class="color-picker"></div>
+        <div class="control-group"><label>Floor Color</label><input type="color" id="floor-color" value="#5d4037" class="color-picker"></div>
+        
+        <div class="control-group">
+            <label>Ceiling Light</label>
+            <div class="color-buttons">
+                <button class="light-btn" data-color="0xffffff" style="background: #ffffff;"></button>
+                <button class="light-btn" data-color="0xffd6aa" style="background: #ffd6aa;"></button>
+                <button class="light-btn" data-color="0xffe4ce" style="background: #ffe4ce;"></button>
+                <button class="light-btn" data-color="0x88ccff" style="background: #88ccff;"></button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Add Office Furniture</label>
+            <select id="model-selector" style="width: 100%; padding: 5px; margin-bottom: 10px; background: #1a2639; color: white; border: 1px solid #d4af37; border-radius: 5px;">
+                <optgroup label="Simple Office Chairs">
+                    <option value="../models/office/simple_office/simple_office_chairs/conference_chair.glb">Conference Chair</option>
+                    <option value="../models/office/simple_office/simple_office_chairs/office_chair.glb">Standard Office Chair</option>
+                    <option value="../models/office/simple_office/simple_office_chairs/office_chair_simple.glb">Simple Office Chair</option>
+                    <option value="../models/office/simple_office/simple_office_chairs/office_chairs_gaming.glb">Gaming/Office Chair</option>
+                </optgroup>
+                <optgroup label="Simple Office Tables">
+                    <option value="../models/office/simple_office/simple_office_table/classic_table.glb">Classic Table</option>
+                    <option value="../models/office/simple_office/simple_office_table/coffee_table.glb">Coffee Table</option>
+                    <option value="../models/office/simple_office/simple_office_table/table.glb">Basic Table</option>
+                </optgroup>
+                <optgroup label="Modern Office Chairs">
+                    <option value="../models/office/modern_office/modern_chairs/chair__futuristic_chair.glb">Futuristic Chair</option>
+                    <option value="../models/office/modern_office/modern_chairs/dining_armchair_-_chair.glb">Armchair</option>
+                    <option value="../models/office/modern_office/modern_chairs/generic_modern_chair.glb">Generic Modern Chair</option>
+                    <option value="../models/office/modern_office/modern_chairs/modern_chair (3).glb">Modern Chair (Alt)</option>
+                    <option value="../models/office/modern_office/modern_chairs/modern_chair.glb">Modern Chair</option>
+                    <option value="../models/office/modern_office/modern_chairs/modern_chair_3d_model.glb">Modern Chair 3D</option>
+                    <option value="../models/office/modern_office/modern_chairs/office_chairs_modern.glb">Modern Office Chair</option>
+                </optgroup>
+                <optgroup label="Modern Office Tables">
+                    <option value="../models/office/modern_office/moderrn_table/lounge_furniture.glb">Lounge Furniture</option>
+                    <option value="../models/office/modern_office/moderrn_table/modern_coffee_table_-_asset.glb">Modern Coffee Table</option>
+                    <option value="../models/office/modern_office/moderrn_table/modern_table.glb">Modern Table</option>
+                    <option value="../models/office/modern_office/moderrn_table/simple_modern_table.glb">Simple Modern Table</option>
+                    <option value="../models/office/modern_office/moderrn_table/simple_office_table.glb">Simple Office Table</option>
+                </optgroup>
+                <optgroup label="Wall Paintings & Decor">
+                    <option value="../models/wall_paint/abstract_wall_art_set__game-ready_3d_models.glb">Abstract Wall Art</option>
+                    <option value="../models/wall_paint/american_horror_wall_picture.glb">American Horror Picture</option>
+                    <option value="../models/wall_paint/day_261_metal_sun_wall_art_-_1scanaday.glb">Metal Sun Wall Art</option>
+                    <option value="../models/wall_paint/fnaf_wall_sun.glb">FNAF Wall Sun</option>
+                    <option value="../models/wall_paint/wall_art.glb">Wall Art</option>
+                    <option value="../models/wall_paint/wall_art_of_flowers_in_pot.glb">Flowers in Pot Art</option>
+                </optgroup>
+            </select>
+            <button id="add-model-btn" style="width: 100%; padding: 8px; background: #d4af37; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">Add to Office</button>
+            <button id="delete-selected-btn" style="width: 100%; padding: 8px; background: #c0392b; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 5px;">Delete Selected</button>
+        </div>
+
+        <button id="drag-mode-btn" style="width: 100%; padding: 8px; background: #2980b9; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 15px;">Enable Edit Mode</button>
+        
+        <div id="edit-tools" style="display: none; margin-top: 10px; text-align: center; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;">
+            <p style="font-size: 12px; margin-bottom: 5px; color: white;">Position: <span id="pos-display">X:0, Y:0, Z:0</span></p>
+            <button id="tool-move" style="padding: 5px; background: #d4af37; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Move</button>
+            <button id="tool-lift" style="padding: 5px; background: #fff; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Lift</button>
+            <button id="tool-rotate" style="padding: 5px; background: #fff; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Rotate</button>
+            <button id="tool-scale" style="padding: 5px; background: #fff; border: none; cursor:pointer; margin: 2px; border-radius: 3px; font-weight: bold;">Scale (Size)</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 20px;">
+    
+    <button id="save-project-btn" style="width: 100%; padding: 12px; background-color: #27ae60; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 8px; transition: 0.3s;">
+        💾 Save Project
+    </button>
+    
+    <button id="exit-editor-btn" style="width: 100%; padding: 12px; background-color: #c0392b; color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 15px; transition: 0.3s;">
+        Exit Editor
+    </button>
+
+</div>
+    </div>
+
+    <div id="save-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2 style="color: #d4af37; margin-top: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;">Save Office Project</h2>
+            
+            <label>Project Name *</label>
+            <input type="text" id="project-name" placeholder="E.g., My Dream Office" required>
+            
+            <label>Description (Optional)</label>
+            <textarea id="project-desc" placeholder="Notes about this design..." rows="3"></textarea>
+            
+            <div class="modal-buttons">
+                <button id="confirm-save-btn" class="save-btn">Save to DB</button>
+                <button id="cancel-save-btn" class="cancel-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="canvas-container"></div>
+    <script src="office.js"></script>
+</body>
+</html>

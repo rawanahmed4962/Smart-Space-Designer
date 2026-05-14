@@ -1,0 +1,185 @@
+/* Hna bn3raf el alwan el asaseya bta3t el moq3 (Variables) 3shan lma n7b n8yr lon n8yro mn hna bs w ysma3 fel code kolo */
+:root {
+    --stone-brown: #5D4037;   
+    --sand-beige: #F4EFE6;    
+    --accent-gold: #D4AF37;   
+
+    --bg-main: var(--sand-beige); /* Lon el 5alfya el r2esy */
+    --bg-sidebar: #5D4037; /* Lon el menu elly 3al shmal */
+    --bg-card: rgba(255, 255, 255, 0.3); /* Khalfyet el krot shbha shfafa */
+    
+    --text-on-beige: #5D4037; /* Lw el khalfya beige, el klam yb2a bony */
+    --text-on-brown: var(--sand-beige);  /* Lw el khalfya bony, el klam yb2a beige */
+    --border-color: rgba(93, 64, 55, 0.1);
+}
+
+/* El 7eta dy bt-esht8al lma el user y-wafe2 y-sha8al el "Dark Mode" */
+[data-theme="dark"] {
+    --bg-main: #1A1210;       /* Khalfya 8am2a gdan */
+    --bg-sidebar: #2C1B17;
+    --text-on-beige: #F4EFE6;  
+    --text-on-brown: #A89B8C;
+}
+
+/* Background Blueprint: Da el shabaka (grid) elly makhfya wara 5ales bt-dy wohm ennak 3la wa7et tasmym */
+.blueprint-bg {
+    position: fixed;
+    inset: 0;
+    /* Bnrsm no2at aw shabaka 5afefa gdan */
+    background-image: radial-gradient(var(--primary-color) 0.5px, transparent 0.5px);
+    background-size: 40px 40px;
+    opacity: 0.1;
+    z-index: -1; /* Bnrga3ha wara kol 7aga */
+    pointer-events: none; /* 3shan mat3tlsh el clicks bta3et el user */
+}
+
+/* Tasmym el menu elly 3al shmal (Sidebar) */
+.sidebar {
+    background-color: #5D4037 !important; /* El bony el sa5ry */
+    color: var(--sand-beige) !important;   /* klam beige */
+    backdrop-filter: blur(10px); /* By3ml ta8beesha 5afefa wara el menu */
+}
+
+/* Bngber el icons w el klam gowa el sidebar yb2o beige 3shan ybano 3la el background el bony */
+.sidebar .menu-item, 
+.sidebar .menu-item i, 
+.sidebar .logo-text {
+    color: var(--sand-beige) !important;
+}
+
+/* Tasmym el krot elly byzhar fiha el mashare3 aw el designs */
+.design-card {
+    background: white; 
+    border: 1px solid rgba(93, 64, 55, 0.1); 
+    color: var(--stone-brown); 
+    /* El transition hna by5aly el 7araka lma t-hover (t2f 3ala el cart) tb2a na3ma msh mofag2a */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-radius: 15px; 
+    overflow: hidden; /* 3shan ay sora gowa el cart matkhrogsh bara el border radius */
+}
+
+/* Lma el user y-hover (y7ot el mouse) 3la el cart */
+.design-card:hover {
+    transform: translateY(-10px); /* By-tla3 l fo2 shwaya */
+    border-color: var(--accent-gold); /* el brwaz y2leb dahaby */
+    box-shadow: 0 10px 20px rgba(93, 64, 55, 0.1); 
+}
+
+/* Animation 3shan el krot t-zhar mn ta7t l fo2 awl ma el page tft7 */
+.view.active .design-card {
+    animation: slideUp 0.6s ease forwards;
+    opacity: 0;
+}
+
+/* Ta3rif el animation elly bynzl mn fo2 l ta7t m3 fady (fade) */
+@keyframes slideDownFade {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* N-apply el 7araka 3la el Sidebar 3shan tnzl awl 7aga */
+.sidebar {
+    animation: slideDownFade 0.8s ease-out forwards;
+}
+
+/* Bndy ta25eer (delay) ll zrayer gowa el menu 3shan y-zharo wra b3d wa7ed wa7ed (Cascade effect) */
+.sidebar .menu-item:nth-child(1) { animation-delay: 0.2s; }
+.sidebar .menu-item:nth-child(2) { animation-delay: 0.3s; }
+.sidebar .menu-item:nth-child(3) { animation-delay: 0.4s; }
+
+/* el mo7tawa nfso by-zhar b3d el sidebar ma tekhlas */
+.main-content {
+    animation: slideDownFade 1s ease-out 0.6s forwards; 
+    opacity: 0; 
+}
+
+/* === ENTRANCE TRANSITION FROM LOGIN === */
+/* Animations zyada 3shan lma tgy mn saf7et el login t7es b dakhla mo7trama */
+@keyframes sidebarSlideIn {
+    from { transform: translateX(-100%); opacity: 0; }
+    to   { transform: translateX(0);     opacity: 1; }
+}
+
+@keyframes contentFadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Furniture Hub Section Styles --- */
+/* Tasmym el qesm bta3 m3ard el 3afsh */
+
+/* Bnzeh el krot gnb b3d, w lw el shasha s8ert bynzelo t7t b3d automatically (Responsive) */
+#furniture-hub .grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    padding: 20px 0;
+}
+
+/* Tasmym el cart gowa el Furniture Hub */
+#furniture-hub .design-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    text-decoration: none; 
+}
+
+#furniture-hub .design-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--accent);
+    box-shadow: 0 15px 30px rgba(93, 64, 55, 0.1);
+}
+
+/* Mkan el sora aw el logo bta3 el m3rad */
+#furniture-hub .card-img {
+    height: 180px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff; 
+    border-bottom: 1px solid var(--border);
+    transition: 0.3s;
+}
+
+#furniture-hub .card-img img, 
+#furniture-hub .card-img i {
+    transition: transform 0.3s ease;
+}
+
+/* Lma t-hover, el logo nfso be-yekbar shwaya gowa el cart */
+#furniture-hub .design-card:hover .card-img i {
+    transform: scale(1.2); 
+}
+
+#furniture-hub .card-body {
+    padding: 20px;
+    text-align: center;
+}
+
+#furniture-hub .card-body h3 {
+    margin-bottom: 10px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+}
+
+#furniture-hub .card-body p {
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+/* awl ma qesm el furniture ytft7, by-zhar b fade in */
+#furniture-hub.active {
+    animation: contentFadeIn 0.8s ease forwards;
+}

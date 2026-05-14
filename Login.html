@@ -5,11 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Smart Space Designer - Premium Access</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="login.css">
+<link rel="stylesheet" href="Login.css">
 </head>
 <body>
 
 <div class="scene" id="mainScene">
+    
     <div class="sliding-plaque" id="plaqueToggle" onclick="toggleLanguage()">
         <div class="plaque-text">EN</div>
         <div class="plaque-text">AR</div>
@@ -27,21 +28,23 @@
         <h2 id="formTitle">Welcome Back</h2>
         <p id="formSubtitle">Access your premium studio</p>
         
-        <form id="authForm">
+        <div id="statusMsg" style="text-align: center; margin-bottom: 10px; font-weight: 600; font-size: 14px; display: none;"></div>
+            
+        <form id="authForm" action="Login.php" method="POST">
             <div class="floating-group" id="nameGroup">
-                <input type="text" id="nameInput" placeholder=" ">
+                <input type="text" id="nameInput" name="name" placeholder=" ">
                 <label for="nameInput" id="lblName">Full Name</label>
             </div>
             <div class="floating-group" id="birthdayGroup">
-                <input type="date" id="bdayInput" placeholder=" ">
+                <input type="date" id="bdayInput" name="bday" placeholder=" ">
                 <label for="bdayInput" id="lblBday">Date of Birth</label>
             </div>
             <div class="floating-group">
-                <input type="email" id="emailInput" placeholder=" " required>
+                <input type="email" id="emailInput" name="email" placeholder=" " required>
                 <label for="emailInput" id="lblEmail">Email Address</label>
             </div>
             <div class="floating-group">
-                <input type="password" id="passInput" placeholder=" " required>
+                <input type="password" id="passInput" name="password" placeholder=" " required>
                 <label for="passInput" id="lblPass">Password</label>
             </div>
             
@@ -49,8 +52,8 @@
         </form>
 
         <div class="divider" id="lblOr">OR</div>
-
-        <button class="social-btn btn-google">
+ 
+        <button class="social-btn btn-google"> 
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.16v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.16C1.43 8.55 1 10.22 1 12s.43 3.45 1.16 4.93l3.68-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.16 7.07l3.68 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
             <span id="lblGoogle">Continue with Google</span>
         </button>
@@ -60,11 +63,35 @@
             <span id="lblApple">Continue with Apple</span>
         </button>
 
-        <div class="toggle-text" id="toggleModeContainer">
-            </div>
+        <div class="toggle-text" id="toggleModeContainer"></div>
     </div>
     
     <div class="click-hint" id="doorHint">CLICK DOORS TO ENTER</div>
+</div>
+
+<div id="circleOverlay" style="
+    position: fixed; inset: 0; z-index: 9999;
+    background: #F4EFE6;
+    clip-path: circle(0% at 50% 50%);
+    transition: clip-path 0.85s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    pointer-events: none;
+">
+    <div id="circleTitle" style="
+        font-family: 'Playfair Display', serif;
+        font-size: 22px; font-weight: 700;
+        letter-spacing: 4px; color: #5C3A21;
+        text-transform: uppercase;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.5s ease, transform 0.5s ease;
+    ">Smart Space Designer</div>
+    <div id="circleLine" style="
+        width: 0; height: 1px;
+        background: #D4AF37;
+        transition: width 0.6s ease 0.1s;
+    "></div>
 </div>
 
 <script>
@@ -75,7 +102,6 @@
     let isEnglish = true;
     let isLoginMode = true;
 
-    // Door Interactions
     doors.forEach(door => {
         door.addEventListener('click', () => {
             if (!scene.classList.contains('open')) scene.classList.add('open');
@@ -89,46 +115,20 @@
 
     const texts = {
         en: {
-            sign: "SMART SPACE DESIGNER",
-            hint: "CLICK DOORS TO ENTER",
-            loginTitle: "Welcome Back",
-            loginSub: "Access your premium studio",
-            signupTitle: "Create Account",
-            signupSub: "Begin your design journey",
-            name: "Full Name",
-            bday: "Date of Birth",
-            email: "Email Address",
-            pass: "Password",
-            loginBtn: "Enter Studio",
-            signupBtn: "Sign Up",
-            or: "OR",
-            google: "Continue with Google",
-            apple: "Continue with Apple",
-            noAccount: "Don't have an account? ",
-            hasAccount: "Already have an account? ",
-            actionSignup: "Sign up",
-            actionLogin: "Log in"
+            sign: "SMART SPACE DESIGNER", hint: "CLICK DOORS TO ENTER", loginTitle: "Welcome Back",
+            loginSub: "Access your premium studio", signupTitle: "Create Account", signupSub: "Begin your design journey",
+            name: "Full Name", bday: "Date of Birth", email: "Email Address", pass: "Password",
+            loginBtn: "Enter Studio", signupBtn: "Sign Up", or: "OR", google: "Continue with Google",
+            apple: "Continue with Apple", noAccount: "Don't have an account? ", hasAccount: "Already have an account? ",
+            actionSignup: "Sign up", actionLogin: "Log in"
         },
         ar: {
-            sign: "مُصمم المساحات الذكية",
-            hint: "انقر على الباب للدخول",
-            loginTitle: "أهلاً بك مجدداً",
-            loginSub: "ادخل إلى الاستوديو الخاص بك",
-            signupTitle: "إنشاء حساب",
-            signupSub: "ابدأ رحلة التصميم الخاصة بك",
-            name: "الاسم الكامل",
-            bday: "تاريخ الميلاد",
-            email: "البريد الإلكتروني",
-            pass: "كلمة المرور",
-            loginBtn: "دخول الاستوديو",
-            signupBtn: "تسجيل جديد",
-            or: "أو",
-            google: "المتابعة باستخدام Google",
-            apple: "المتابعة باستخدام Apple",
-            noAccount: "ليس لديك حساب؟ ",
-            hasAccount: "لديك حساب بالفعل؟ ",
-            actionSignup: "سجل الآن",
-            actionLogin: "تسجيل الدخول"
+            sign: "مُصمم المساحات الذكية", hint: "انقر على الباب للدخول", loginTitle: "أهلاً بك مجدداً",
+            loginSub: "ادخل إلى الاستوديو الخاص بك", signupTitle: "إنشاء حساب", signupSub: "ابدأ رحلة التصميم الخاصة بك",
+            name: "الاسم الكامل", bday: "تاريخ الميلاد", email: "البريد الإلكتروني", pass: "كلمة المرور",
+            loginBtn: "دخول الاستوديو", signupBtn: "تسجيل جديد", or: "أو", google: "المتابعة باستخدام Google",
+            apple: "المتابعة باستخدام Apple", noAccount: "ليس لديك حساب؟ ", hasAccount: "لديك حساب بالفعل؟ ",
+            actionSignup: "سجل الآن", actionLogin: "تسجيل الدخول"
         }
     };
 
@@ -159,8 +159,7 @@
             document.getElementById('nameInput').required = false;
             document.getElementById('bdayInput').required = false;
 
-            document.getElementById('toggleModeContainer').innerHTML = 
-                `${t.noAccount}<span onclick="toggleMode()">${t.actionSignup}</span>`;
+            document.getElementById('toggleModeContainer').innerHTML = `${t.noAccount}<span onclick="toggleMode()">${t.actionSignup}</span>`;
         } else {
             document.getElementById('formTitle').innerText = t.signupTitle;
             document.getElementById('formSubtitle').innerText = t.signupSub;
@@ -171,44 +170,86 @@
             document.getElementById('nameInput').required = true;
             document.getElementById('bdayInput').required = true;
 
-            document.getElementById('toggleModeContainer').innerHTML = 
-                `${t.hasAccount}<span onclick="toggleMode()">${t.actionLogin}</span>`;
+            document.getElementById('toggleModeContainer').innerHTML = `${t.hasAccount}<span onclick="toggleMode()">${t.actionLogin}</span>`;
         }
     }
 
-    function toggleMode() {
-        isLoginMode = !isLoginMode;
-        updateUI();
-    }
-
-    function toggleLanguage() {
-        isEnglish = !isEnglish;
-        updateUI();
-        event.stopPropagation();
-    }
+    function toggleMode() { isLoginMode = !isLoginMode; updateUI(); }
+    function toggleLanguage() { isEnglish = !isEnglish; updateUI(); event.stopPropagation(); }
 
     updateUI();
 
-    document.getElementById('authForm').addEventListener('submit', (e) => {
+    // ==========================================
+    // 1. كود الفورم (Login / Register) مع التوجيه الذكي
+    // ==========================================
+    // ==========================================
+    // 1. كود الفورم (Login / Register) مع التوجيه الذكي
+    // ==========================================
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const btn = document.getElementById('mainActionBtn');
-        const originalText = btn.innerText;
-        
-        btn.innerText = isEnglish ? 'Processing...' : 'جاري التحميل...';
-        btn.style.background = '#8B5A2B'; 
+        const targetPHP = isLoginMode ? 'Login.php' : 'register.php';
+        const formData = new FormData(e.target);
+        const statusMsg = document.getElementById('statusMsg');
 
-        setTimeout(() => {
-            btn.innerText = originalText;
-            btn.style.background = '#5C3A21'; 
-            
-            const msgEN = isLoginMode ? 'Logged in successfully!' : 'Account created successfully!';
-            const msgAR = isLoginMode ? 'تم تسجيل الدخول بنجاح!' : 'تم إنشاء الحساب بنجاح!';
-            alert(isEnglish ? msgEN : msgAR);
-            
-            scene.classList.remove('open'); 
-            e.target.reset(); 
-            if(!isLoginMode) toggleMode(); 
-        }, 1500);
+        statusMsg.style.display = "block";
+        statusMsg.style.color = "#8B5A2B";
+        statusMsg.innerText = "Processing...";
+
+        try {
+            const response = await fetch(targetPHP, { method: 'POST', body: formData });
+            const resultText = await response.text();
+            const resTrimmed = resultText.trim();
+
+            if (response.ok && (resTrimmed === "success" || resTrimmed === "success_admin" || resTrimmed === "success_user")) {
+                statusMsg.style.color = "#28a745"; 
+                statusMsg.innerText = isLoginMode ? "Welcome back! Redirecting..." : "Your account has been successfully created!";
+
+                scene.classList.add('zoom-in');
+                const overlay = document.getElementById('circleOverlay');
+                overlay.style.clipPath = 'circle(150% at 50% 50%)';
+
+                setTimeout(() => {
+                    document.getElementById('circleTitle').style.opacity = '1';
+                    document.getElementById('circleTitle').style.transform = 'translateY(0)';
+                    document.getElementById('circleLine').style.width = '120px'; 
+                }, 300);
+
+                setTimeout(() => {
+                    // التوجيه الذكي بناءً على الكلمة السحرية
+                    if (resTrimmed === "success_admin") {
+                        window.location.href = '/SSD/admin.html'; 
+                    } else {
+                        window.location.href = '/SSD/dashboard/dashboard.php'; 
+                    }
+                }, 1600); 
+            } else {
+                statusMsg.style.color = "#d32f2f"; 
+                // السطر ده بياخد رسالة الـ PHP زي ما هي ويعرضها لليوزر بدون كلمة Error
+                statusMsg.innerText = resultText.replace("Error: ", "");
+            }
+        } catch (error) {
+            statusMsg.style.color = "#d32f2f"; 
+            statusMsg.innerText = "Connection Error: " + error.message;
+        }
+    });
+
+    // ==========================================
+    // 2. كود زراير جوجل وأبل
+    // ==========================================
+    document.querySelector('.btn-google').addEventListener('click', (e) => {
+        e.preventDefault();
+        const statusMsg = document.getElementById('statusMsg');
+        statusMsg.style.display = "block";
+        statusMsg.style.color = "#D4AF37"; 
+        statusMsg.innerText = "Connecting to Google Servers... (Requires Google Cloud Client ID)";
+    });
+
+    document.querySelector('.btn-apple').addEventListener('click', (e) => {
+        e.preventDefault();
+        const statusMsg = document.getElementById('statusMsg');
+        statusMsg.style.display = "block";
+        statusMsg.style.color = "#D4AF37"; 
+        statusMsg.innerText = "Apple Sign-in is available for Apple Developer Program members only.";
     });
 </script>
 </body>
