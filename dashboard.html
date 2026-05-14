@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSD Studio - Project Central</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Light Theme */
+            --bg-main: #f8f9fc;
+            --bg-sidebar: #ffffff;
+            --bg-card: #ffffff;
+            --primary: #5d4037; /* Espresso */
+            --primary-text: #ffffff;
+            --accent: #d4af37; 
+            --text: #1e293b;
+            --text-sec: #64748b;
+            --border: #e2e8f0;
+            --sidebar-width: 260px;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme */
+            --bg-main: #0a192f;
+            --bg-sidebar: #112240;
+            --bg-card: #1e293b;
+            --primary: #E6D5C3; /* اللون البيج اللي طلبته بدل البني */
+            --primary-text: #1e293b; /* لون غامق عشان يبان فوق البيج */
+            --accent: #d4af37;
+            --text: #f8f9fc;
+            --text-sec: #94a3b8;
+            --border: #233554;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: var(--bg-main); color: var(--text); transition: background-color 0.3s, color 0.3s; overflow-x: hidden; }
+
+        .blueprint-bg {
+            position: fixed; inset: 0;
+            background-image: radial-gradient(var(--primary) 0.5px, transparent 0.5px);
+            background-size: 40px 40px; opacity: 0.1; z-index: -1;
+            pointer-events: none; transition: 0.3s;
+        }
+
+        .app-container { display: flex; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width); background: var(--bg-sidebar);
+            height: 100vh; position: fixed; border-right: 1px solid var(--border);
+            display: flex; flex-direction: column; z-index: 100; transition: 0.3s;
+        }
+
+        .sidebar-header { padding: 30px; font-weight: 700; color: var(--primary); font-size: 22px; display: flex; align-items: center; gap: 10px; transition: 0.3s;}
+        
+        .nav-links { list-style: none; padding: 20px; flex: 1; }
+        .nav-item {
+            padding: 12px 15px; border-radius: 12px; margin-bottom: 8px;
+            cursor: pointer; display: flex; align-items: center; gap: 15px;
+            color: var(--text-sec); transition: 0.3s; font-weight: 600;
+        }
+        .nav-item.active { background: var(--primary); color: var(--primary-text); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        .nav-item:hover:not(.active) { background: rgba(150, 150, 150, 0.1); color: var(--primary); }
+
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border); }
+
+        /* Main Content */
+        .main-content { margin-left: var(--sidebar-width); width: calc(100% - var(--sidebar-width)); padding: 40px; }
+        .view { display: none; animation: fadeIn 0.5s ease; }
+        .view.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Home Content Styles */
+        .header-flex { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .btn-icon { background: var(--primary); color: var(--primary-text); border: none; width: 45px; height: 45px; border-radius: 50%; font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .btn-icon:hover { transform: scale(1.1); }
+
+        .section-title { margin: 30px 0 15px; display: flex; justify-content: space-between; align-items: center; }
+        .recommended-scroll { display: flex; gap: 15px; overflow-x: auto; padding: 10px 0; margin-bottom: 20px; }
+        .rec-item { min-width: 100px; text-align: center; cursor: pointer; }
+        .rec-circle { width: 70px; height: 70px; border-radius: 50%; background: var(--accent); margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; transition: 0.3s; }
+        .rec-item:hover .rec-circle { transform: scale(1.1); background: var(--primary); color: var(--primary-text); }
+
+        .grid-container { display: grid; gap: 20px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        .design-card { background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; transition: 0.3s; cursor: pointer; }
+        .design-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .card-img { height: 150px; background: #ddd; background-size: cover; background-position: center; }
+        .card-body { padding: 15px; }
+
+        /* Text Only Card (For My Projects) */
+        .text-card { padding: 25px; border-left: 5px solid var(--accent); }
+        .text-card h3 { margin-bottom: 5px; font-size: 18px; }
+        .text-card p { font-size: 13px; color: var(--text-sec); font-weight: 600; }
+
+        /* New Project Doors */
+        .doors-container { display: flex; gap: 20px; height: 450px; margin-top: 20px; }
+        .room-door { flex: 1; position: relative; border-radius: 20px; overflow: hidden; border: 2px solid var(--border); cursor: pointer; transition: 0.5s cubic-bezier(0.25, 1, 0.5, 1); }
+        .room-door .door-bg { width: 100%; height: 100%; background-size: cover; background-position: center; filter: grayscale(100%) brightness(40%); transition: 0.5s ease; }
+        .room-door .door-label { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); color: white; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 3px; opacity: 0; transition: 0.5s ease; z-index: 2; text-shadow: 0 4px 15px #000; }
+        .room-door:hover { flex: 2; border-color: var(--accent); }
+        .room-door:hover .door-bg { filter: grayscale(0%) brightness(100%); transform: scale(1.1); }
+        .room-door:hover .door-label { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
+        /* Glass Cards for Profile/Settings */
+        .glass-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; margin-bottom: 25px; transition: 0.3s; }
+        
+        /* Profile Specifics */
+        .profile-header { display: flex; align-items: center; gap: 25px; margin-bottom: 35px; }
+        .profile-img { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; }
+        .profile-stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .stat-item { text-align: center; padding: 15px; background: rgba(150, 150, 150, 0.05); border-radius: 12px; border: 1px solid var(--border); }
+        .stat-item strong { display: block; font-size: 18px; color: var(--primary); transition: 0.3s; }
+        .stat-item span { font-size: 11px; color: var(--text-sec); text-transform: uppercase; font-weight: 700; }
+
+        /* Settings Styles */
+        .settings-section h3 { margin-bottom: 20px; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; transition: 0.3s; }
+        .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--border); }
+        .settings-row:last-child { border-bottom: none; }
+        .settings-info { display: flex; flex-direction: column; gap: 4px; }
+        .settings-info span { font-size: 13px; color: var(--text-sec); }
+
+        /* Custom Select & Switch */
+        select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-main); color: var(--text); outline: none; transition: 0.3s; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 22px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; transition: .4s; border-radius: 22px; }
+        input:checked + .slider { background: var(--primary); }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .btn-action { background: var(--primary); color: var(--primary-text); border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; margin-top: 20px; }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <div class="blueprint-bg" id="parallaxBg"></div>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header"><i class="fa-solid fa-wand-magic-sparkles"></i> SSD Studio</div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-target="home"><i class="fa-solid fa-house"></i> Home</li>
+                <li class="nav-item" data-target="new-project"><i class="fa-solid fa-plus-circle"></i> New Project</li>
+                <li class="nav-item" data-target="my-designs"><i class="fa-solid fa-folder-open"></i> My Projects</li>
+                <li class="nav-item" data-target="profile"><i class="fa-solid fa-user-tie"></i> My Profile</li>
+                <li class="nav-item" data-target="settings"><i class="fa-solid fa-sliders"></i> Studio Settings</li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="nav-item" onclick="window.location.href='../login/Login.html'" style="color: #e74c3c;">
+                    <i class="fa-solid fa-power-off"></i> Logout
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            
+            <section class="view active" id="home">
+                <div class="header-flex">
+                    <h1 style="font-size: 32px;">Hi,Youssef! </h1>
+                    <button class="btn-icon" onclick="document.querySelector('[data-target=\'new-project\']').click()" title="Create New Project">
+                        <i class="fa-solid fa-plus"></i>
+                    </button>
+                </div>
+                <p style="color: var(--text-sec);">Welcome back to your premium studio.</p>
+                
+                <h2 style="font-size: 18px; margin: 30px 0 15px;">Recommended Styles</h2>
+                <div class="recommended-scroll">
+                    <div class="rec-item"><div class="rec-circle"><i class="fa-solid fa-couch"></i></div><span>Modern</span></div>
+                    <div class="rec-item"><div class="rec-circle" style="background:#8b5a2b"><i class="fa-solid fa-tree"></i></div><span>Boho</span></div>
+                    <div class="rec-item"><div class="rec-circle" style="background:#2c3e50"><i class="fa-solid fa-city"></i></div><span>Industrial</span></div>
+                </div>
+
+                <h2 style="font-size: 18px; margin-bottom: 15px;">Latest Projects</h2>
+                <div class="grid-container">
+                    <div class="design-card">
+                        <div class="card-img" style="background-image: url('https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=400');"></div>
+                        <div class="card-body"><h3>Village West Penthouse</h3><p>Edited 2h ago</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="new-project">
+                <h2>Choose a Room to Design</h2>
+                <div class="doors-container">
+                    
+                    <a href="new_project/office/office.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('office.jpeg')"></div>
+                        <div class="door-label">Office</div>
+                    </a>
+
+                    <a href="new_project/living_room/living_room.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=800');"></div>
+                        <div class="door-label">Living Room</div>
+                    </a>
+
+                    <a href="new_project/bedroom/bedroom.html" class="room-door" style="display: block; text-decoration: none;">
+                        <div class="door-bg" style="background-image: url('https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800');"></div>
+                        <div class="door-label">Bedroom</div>
+                    </a>
+
+                </div>
+            </section>
+
+            <section class="view" id="my-designs">
+                <h2>My Projects Library</h2>
+                <div class="grid-container" style="margin-top: 20px;">
+                    <div class="design-card text-card">
+                        <h3>Village West Penthouse</h3>
+                        <p>Yesterday • Living Room</p>
+                    </div>
+                    <div class="design-card text-card">
+                        <h3>Sibling Shared Room</h3>
+                        <p>2 Days Ago • Bedroom</p>
+                    </div>
+                    <div class="design-card text-card">
+                        <h3>Workspace Upgrade</h3>
+                        <p>Last Week • Office</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="profile">
+                <div class="glass-card">
+                    <div class="profile-header">
+                        <img src="https://ui-avatars.com/api/?name=Youssef+Gaser&background=5d4037&color=fff" class="profile-img">
+                        <div>
+                            <h2 style="font-size: 28px;">Youssef Gaser</h2>
+                            <p style="color: var(--accent); font-weight: 700; letter-spacing: 1px;">PREMIUM ARCHITECT</p>
+                        </div>
+                    </div>
+                    
+                    <div class="profile-stat-grid">
+                        <div class="stat-item"><strong>12</strong><span>Projects</span></div>
+                        <div class="stat-item"><strong>Modern/Boho</strong><span>Pref. Style</span></div>
+                        <div class="stat-item"><strong>19</strong><span>Age</span></div>
+                    </div>
+
+                    <div style="margin-top: 30px;">
+                        <div class="settings-row"><strong>Specialty</strong> <span>3D Walkthroughs</span></div>
+                        <div class="settings-row"><strong>Member Since</strong> <span>Nov 2025</span></div>
+                        <div class="settings-row"><strong>Year of Birth</strong> <span>2007</span></div>
+                        <div class="settings-row"><strong>Email</strong> <span>youssef.gaser@example.com</span></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="view" id="settings">
+                <h2 style="margin-bottom: 30px;">Studio Settings</h2>
+                <div class="glass-card">
+                    <div class="settings-section">
+                        <h3>General Appearance</h3>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Dark Mode</strong><span>Switch theme</span></div>
+                            <label class="switch"><input type="checkbox" id="darkModeToggle"><span class="slider"></span></label>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Measurement Units</strong><span>Metric or Imperial</span></div>
+                            <select><option>Metric (Meters)</option><option>Imperial (Feet)</option></select>
+                        </div>
+                    </div>
+
+                    <div class="settings-section" style="margin-top: 40px;">
+                        <h3>Design Preferences</h3>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Default Room Style</strong><span>Pre-load assets</span></div>
+                            <select><option>Modern</option><option>Bohemian</option><option>Industrial</option></select>
+                        </div>
+                        <div class="settings-row">
+                            <div class="settings-info"><strong>Studio Language</strong><span>Change UI language</span></div>
+                            <select><option>English (US)</option><option>Arabic (العربية)</option></select>
+                        </div>
+                    </div>
+                    <button class="btn-action" style="width: 100%; margin-top: 30px;">Apply All Changes</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Tab Navigation Logic
+        const navItems = document.querySelectorAll('.nav-item[data-target]');
+        const views = document.querySelectorAll('.view');
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                const target = item.getAttribute('data-target');
+                views.forEach(v => {
+                    v.classList.remove('active');
+                    if(v.id === target) v.classList.add('active');
+                });
+            });
+        });
+
+        // Dark Mode Logic
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        if(localStorage.getItem('ssd_theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+            darkModeToggle.checked = true;
+        }
+
+        darkModeToggle.addEventListener('change', () => {
+            if(darkModeToggle.checked) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('ssd_theme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('ssd_theme', 'light');
+            }
+        });
+
+        // Parallax Blueprint Effect
+        document.onmousemove = (e) => {
+            const bg = document.getElementById('parallaxBg');
+            bg.style.transform = `translate(${(innerWidth/2 - e.pageX)/80}px, ${(innerHeight/2 - e.pageY)/80}px) scale(1.1)`;
+        };
+    </script>
+    <section class="view" id="new-project">
+    <h2>Choose a Room to Design</h2>
+</section>
+</body>
+</html>
